@@ -265,26 +265,240 @@ if ($isAdmin) {
         </div>
     </div>
 <?php else: ?>
+    <?php
+    // Fetch Customer Specific Data
+    $customerId = $_SESSION['customer_id'] ?? 0;
+
+    $customerStats = ['total_spent' => 0, 'total_liters' => 0, 'total_visits' => 0];
+    $customerSales = [];
+
+    if ($customerId) {
+        try {
+            // Get aggregates
+            $stmt = $pdo->prepare("
+                SELECT 
+                    COUNT(*) as total_visits,
+                    COALESCE(SUM(total_amount), 0) as total_spent,
+                    COALESCE(SUM(quantity), 0) as total_liters
+                FROM sale 
+                WHERE customer_id = ?
+            ");
+            $stmt->execute([$customerId]);
+            $customerStats = $stmt->fetch();
+
+            // Get recent history
+            $stmt = $pdo->prepare("
+                SELECT s.*, f.fuel_name, s.station_name
+                FROM sale s
+                JOIN pump p ON s.pump_id = p.pump_id
+                JOIN fuel_type f ON p.fuel_id = f.fuel_id
+                LEFT JOIN station st ON p.station_id = st.station_id
+                WHERE s.customer_id = ?
+                ORDER BY s.sale_date DESC
+                LIMIT 5
+            ");
+            // Workaround for the query above, we just need basic info
+            $stmt = $pdo->prepare("
+                SELECT s.sale_id, s.quantity, s.total_amount, s.sale_date, f.fuel_name 
+                FROM sale s
+                JOIN pump p ON s.pump_id = p.pump_id
+                JOIN fuel_type f ON p.fuel_id = f.fuel_id
+                WHERE s.customer_id = ? 
+                ORDER BY s.sale_date DESC 
+                LIMIT 5
+            ");
+            $stmt->execute([$customerId]);
+            $customerSales = $stmt->fetchAll();
+        } catch (PDOException $e) {
+            // Silently handle or log error
+        }
+    }
+    ?>
     <!-- Customer Dashboard -->
-    <div class="row mt-5">
-        <div class="col-md-8 mx-auto text-center">
-            <div class="card shadow">
-                <div class="card-body py-5">
-                    <i class="bi bi-droplet-half fs-1 text-primary mb-3"></i>
-                    <h3 class="mb-4">Welcome, Customer!</h3>
-                    <p class="lead text-muted">
-                        Thank you for registering with Petroleum Station MS. Your account has been created successfully.
-                    </p>
-                    <p class="text-muted mb-4">
-                        Currently, there are no customer-facing features available on the dashboard. Stay tuned as we build out loyalty tracking and purchase history!
-                    </p>
-                    <a href="logout.php" class="btn btn-outline-danger">
-                        <i class="bi bi-box-arrow-right"></i> Log out
+    <div class="row mb-4">
+        <!-- Loyalty & Summary Cards -->
+        <div class="col-md-4">
+            <div class="card text-white bg-success h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-uppercase fw-bold opacity-75">Total Spent</h6>
+                            <h2 class="mb-0">RWF <?php echo number_format($customerStats['total_spent'], 0); ?></h2>
+                        </div>
+                        <i class="bi bi-wallet2 fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-info h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-uppercase fw-bold opacity-75">Fuel Purchased</h6>
+                            <h2 class="mb-0"><?php echo number_format($customerStats['total_liters'], 1); ?> L</h2>
+                        </div>
+                        <i class="bi bi-fuel-pump fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-primary h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-uppercase fw-bold opacity-75">Total Visits</h6>
+                            <h2 class="mb-0"><?php echo $customerStats['total_visits']; ?></h2>
+                        </div>
+                        <i class="bi bi-car-front fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="row">
+        <!-- Recent Transactions -->
+        <div class="col-md-8 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-clock-history text-primary me-2"></i> Recent Transactions</h5>
+                </div>
+                <div class="card-body p-0">
+                    <?php if (empty($customerSales)): ?>
+                        <div class="p-5 text-center text-muted">
+                            <i class="bi bi-receipt fs-1 mb-3 d-block opacity-50"></i>
+                            <h5>No purchases yet</h5>
+                            <p>Visit our stations to start tracking your fuel consumption.</p>
+                        </div>
+                    <?php else: ?>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Fuel Type</th>
+                                        <th>Quantity</th>
+                                        <th>Total Paid</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($customerSales as $sale): ?>
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold"><?php echo date('M d, Y', strtotime($sale['sale_date'])); ?></div>
+                                                <small class="text-muted"><?php echo date('H:i', strtotime($sale['sale_date'])); ?></small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary"><?php echo htmlspecialchars($sale['fuel_name']); ?></span>
+                                            </td>
+                                            <td><?php echo number_format($sale['quantity'], 1); ?> L</td>
+                                            <td class="fw-bold text-success">RWF <?php echo number_format($sale['total_amount'], 0); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+
+        <!-- ID Card / Side Info -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100 border-0 bg-light">
+                <div class="card-body text-center p-4">
+                    <div class="mb-4 mt-2">
+                        <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 100px; height: 100px;">
+                            <i class="bi bi-person-fill text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                    </div>
+                    <h4 class="mb-1 fw-bold"><?php echo htmlspecialchars($_SESSION['username']); ?></h4>
+                    <p class="text-muted mb-4">Verified Customer</p>
+
+                    <div class="bg-white p-3 rounded text-start shadow-sm mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Customer ID:</span>
+                            <span class="fw-bold">#<?php echo str_pad($customerId, 5, '0', STR_PAD_LEFT); ?></span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Status:</span>
+                            <span class="badge bg-success">Active</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Reward Tier:</span>
+                            <span>Bronze <i class="bi bi-star-fill text-warning ms-1"></i></span>
+                        </div>
+                    </div>
+
+                    <a href="logout.php" class="btn btn-outline-danger w-100 mt-auto">
+                        <i class="bi bi-box-arrow-right me-2"></i> Log out
                     </a>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Our Services Section -->
+    <h4 class="mb-3 mt-2"><i class="bi bi-grid text-primary me-2"></i> Our Services</h4>
+    <div class="row g-4 mb-5">
+        <!-- Service 1 -->
+        <div class="col-md-4">
+            <a href="fuel_delivery.php" class="text-decoration-none text-dark">
+                <div class="card h-100 shadow-sm service-card border-0 text-center transition-hover">
+                    <div class="card-body py-5">
+                        <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex p-4 mb-3">
+                            <i class="bi bi-truck text-primary fs-1"></i>
+                        </div>
+                        <h5 class="fw-bold">Fuel Delivery</h5>
+                        <p class="text-muted mb-0">Order bulk fuel securely directly to your premises or business location.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- Service 2 -->
+        <div class="col-md-4">
+            <a href="loyalty.php" class="text-decoration-none text-dark">
+                <div class="card h-100 shadow-sm service-card border-0 text-center transition-hover">
+                    <div class="card-body py-5">
+                        <div class="rounded-circle bg-warning bg-opacity-10 d-inline-flex p-4 mb-3">
+                            <i class="bi bi-gift text-warning fs-1"></i>
+                        </div>
+                        <h5 class="fw-bold">Loyalty & Rewards</h5>
+                        <p class="text-muted mb-0">Track your bronze tier points and redeem exclusive discounts on fuel.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- Service 3 -->
+        <div class="col-md-4">
+            <a href="car_wash.php" class="text-decoration-none text-dark">
+                <div class="card h-100 shadow-sm service-card border-0 text-center transition-hover">
+                    <div class="card-body py-5">
+                        <div class="rounded-circle bg-info bg-opacity-10 d-inline-flex p-4 mb-3">
+                            <i class="bi bi-car-front text-info fs-1"></i>
+                        </div>
+                        <h5 class="fw-bold">Car Detailing</h5>
+                        <p class="text-muted mb-0">Schedule premium car washing or interior detailing at our partner stations.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Add some quick CSS for hover effects -->
+    <style>
+        .transition-hover {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .transition-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+        }
+    </style>
 <?php endif; ?>
 
 <?php include 'includes/footer.php'; ?>

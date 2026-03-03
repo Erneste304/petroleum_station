@@ -25,12 +25,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->fetch()) {
             $error = 'Username already taken.';
         } else {
-            $hash = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare('INSERT INTO users (username, password, role) VALUES (?, ?, ?)');
-            $stmt->execute([$username, $hash, 'customer']);
-            $_SESSION['success'] = 'Registration successful. Please log in.';
-            header('Location: login.php');
-            exit;
+            // Start a transaction as we are inserting into multiple tables
+            $pdo->beginTransaction();
+            try {
+                // 1. Create a blank customer profile for the user
+                $stmt = $pdo->prepare('INSERT INTO customer (name) VALUES (?)');
+                $stmt->execute([$username]); // Use username as default name
+                $customerId = $pdo->lastInsertId();
+
+                // 2. Create the user authentication record and link to customer
+                $hash = password_hash($password, PASSWORD_DEFAULT);
+                $stmt = $pdo->prepare('INSERT INTO users (username, password, role, customer_id) VALUES (?, ?, ?, ?)');
+                $stmt->execute([$username, $hash, 'customer', $customerId]);
+
+                $pdo->commit();
+
+                $_SESSION['success'] = 'Registration successful. Please log in.';
+                header('Location: login.php');
+                exit;
+            } catch (Exception $e) {
+                $pdo->rollBack();
+                $error = 'Registration failed due to a system error. Please try again.';
+            }
         }
     }
 }

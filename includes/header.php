@@ -85,7 +85,23 @@
                             </ul>
                         </li>
                     <?php endif; ?>
+
                     <?php if (isset($_SESSION['user_id'])): ?>
+                        <!-- Visible to ALL logged-in users (Admins & Customers) -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-grid"></i> Services
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="../fuel_delivery.php"><i class="bi bi-truck me-2 text-primary"></i> Fuel Delivery</a></li>
+                                <li><a class="dropdown-item" href="../loyalty.php"><i class="bi bi-gift me-2 text-warning"></i> Loyalty & Rewards</a></li>
+                                <li>
+                                    <h6 class="dropdown-header">Partner Services</h6>
+                                </li>
+                                <li><a class="dropdown-item" href="../car_wash.php"><i class="bi bi-car-front me-2 text-info"></i> Car Detailing</a></li>
+                            </ul>
+                        </li>
+
                         <li class="nav-item">
                             <a class="nav-link" href="../logout.php">
                                 <i class="bi bi-box-arrow-right"></i> Logout

@@ -24,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id'] = $user['user_id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['role'] = $user['role'] ?? 'customer'; // Default to customer if not set
+            $_SESSION['customer_id'] = $user['customer_id'];
             header('Location: index.php');
             exit;
         } else {
