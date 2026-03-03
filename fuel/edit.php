@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once '../includes/auth_middleware.php';
+requireAdmin();
 require_once '../config/database.php';
 include '../includes/header.php';
 

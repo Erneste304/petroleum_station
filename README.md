@@ -48,7 +48,9 @@ This project demonstrates professional software development practices including:
 ### 🔐 Authentication & Security
 - User registration & login system
 - Password hashing using PHP's `password_hash()`
-- Session management
+- Session & Role-Based Access Control
+  - **Admin**: Full control over management metrics, HR, fuel inventory, and sales.
+  - **Customer**: Restricted access with a simplified dashboard view.
 - Secure logout functionality
 
 ### 📊 Dashboard & Analytics
