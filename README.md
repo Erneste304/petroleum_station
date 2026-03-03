@@ -247,48 +247,22 @@ For production deployment:
 
 ## 📁 Project Structure
 
-```
+```text
 petroleum-station-ms/
-├── index.php                 # Dashboard (requires login)
-├── login.php                 # User login with promotional content
-├── register.php              # User registration
-├── logout.php                # Session destruction
-├── test_connection.php       # Database connectivity test
-├── config/
-│   └── database.php          # Database configuration
-├── includes/
-│   ├── header.php            # Navigation & page header
-│   └── footer.php            # Page footer & scripts
-├── css/
-│   ├── custom.css            # Custom styling
-│   └── style.css             # Additional styles
-├── customers/
-│   ├── index.php             # List customers
-│   ├── create.php            # Add customer form
-│   ├── edit.php              # Edit customer
-│   └── delete.php            # Delete customer
-├── employees/
-│   ├── index.php             # List employees
-│   ├── create.php            # Add employee form
-│   ├── edit.php              # Edit employee
-│   └── delete.php            # Delete employee
-├── fuel/
-│   ├── index.php             # List fuel types
-│   ├── create.php            # Add fuel type
-│   ├── edit.php              # Edit fuel type
-│   └── delete.php            # Delete fuel type
-├── sales/
-│   ├── index.php             # List sales
-│   ├── create.php            # New sale form
-│   ├── view.php              # View sale details
-│   ├── edit.php              # Edit sale
-│   └── delete.php            # Delete sale
-├── stations/
-│   ├── index.php             # List stations
-│   ├── create.php            # Add station
-│   ├── edit.php              # Edit station
-│   └── delete.php            # Delete station
-└── README.md                 # This file
+├── config/                   # System configuration & database setup
+├── css/                      # UI styles and design assets
+├── includes/                 # Shared template components (header, footer)
+├── [feature_modules]/        # Core application modules:
+│   ├── customers/            # Client management operations
+│   ├── employees/            # Staff records & assignments
+│   ├── fuel/                 # Fuel inventory & tank monitoring
+│   ├── sales/                # Transaction processing logic
+│   └── stations/             # Station location management
+├── index.php                 # Main authenticated dashboard
+├── login.php                 # Secure login gateway
+├── register.php              # New user registration
+├── logout.php                # Authentication termination
+└── README.md                 # Project documentation
 ```
 
 ---
