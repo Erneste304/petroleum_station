@@ -1,5 +1,11 @@
 <?php
 session_start();
+// require authentication - redirect to login page if not logged in
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
 require_once 'config/database.php';
 include 'includes/header.php';
 

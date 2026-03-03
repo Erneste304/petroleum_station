@@ -21,6 +21,11 @@
             <a class="navbar-brand" href="../index.php">
                 <i class="bi bi-fuel-pump"></i> Petroleum Station MS
             </a>
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <span class="navbar-text text-light ms-3">
+                    Hello, <?php echo htmlspecialchars($_SESSION['username']); ?>
+                </span>
+            <?php endif; ?>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -76,6 +81,19 @@
                             <li><a class="dropdown-item" href="../sales/create.php">New Sale</a></li>
                         </ul>
                     </li>
+                        <?php if (isset($_SESSION['user_id'])): ?>
+                            <li class="nav-item">
+                                <a class="nav-link" href="../logout.php">
+                                    <i class="bi bi-box-arrow-right"></i> Logout
+                                </a>
+                            </li>
+                        <?php else: ?>
+                            <li class="nav-item">
+                                <a class="nav-link" href="../login.php">
+                                    <i class="bi bi-box-arrow-in-right"></i> Login
+                                </a>
+                            </li>
+                        <?php endif; ?>
                 </ul>
             </div>
         </div>
