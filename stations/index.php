@@ -1,9 +1,7 @@
 <?php
 require_once '../includes/auth_middleware.php';
-requireAdmin();
 require_once '../config/database.php';
-include '../includes/header.php';
-
+requirePermission('stations');
 // Handle delete request
 if (isset($_GET['delete'])) {
     try {
@@ -19,6 +17,8 @@ if (isset($_GET['delete'])) {
 
 // Fetch all stations
 $stations = $pdo->query("SELECT * FROM station ORDER BY station_name")->fetchAll();
+
+include '../includes/header.php';
 ?>
 
 <div class="row mb-4">

@@ -1,8 +1,6 @@
-<?php
 require_once '../includes/auth_middleware.php';
-requireAdmin();
 require_once '../config/database.php';
-include '../includes/header.php';
+requirePermission('sales');
 
 // Check if ID is provided
 if (!isset($_GET['id'])) {
@@ -15,7 +13,7 @@ $id = $_GET['id'];
 
 // Fetch sale data with details
 $stmt = $pdo->prepare("
-    SELECT s.*, p.pump_id, p.fuel_id, f.price_per_liter,
+    SELECT s.*, pu.pump_id, pu.fuel_id, f.price_per_liter,
            pay.payment_method, pay.payment_id
     FROM sale s
     JOIN pump pu ON s.pump_id = pu.pump_id
@@ -91,15 +89,35 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         
         // Adjust tank stock
-        $quantity_difference = $new_quantity - $old_quantity;
-        
-        $stmt = $pdo->prepare("
-            UPDATE tank t 
-            JOIN pump p ON t.fuel_id = p.fuel_id 
-            SET t.current_stock = t.current_stock - ? 
-            WHERE p.pump_id = ?
-        ");
-        $stmt->execute([$quantity_difference, $_POST['pump_id']]);
+        if ($sale['pump_id'] != $_POST['pump_id']) {
+            // Add quantity back to old tank
+            $stmt = $pdo->prepare("
+                UPDATE tank t 
+                JOIN pump p ON t.fuel_id = p.fuel_id 
+                SET t.current_stock = t.current_stock + ? 
+                WHERE p.pump_id = ?
+            ");
+            $stmt->execute([$old_quantity, $sale['pump_id']]);
+            
+            // Deduct quantity from new tank
+            $stmt = $pdo->prepare("
+                UPDATE tank t 
+                JOIN pump p ON t.fuel_id = p.fuel_id 
+                SET t.current_stock = t.current_stock - ? 
+                WHERE p.pump_id = ?
+            ");
+            $stmt->execute([$new_quantity, $_POST['pump_id']]);
+        } else {
+            // Adjust difference for the same tank
+            $quantity_difference = $new_quantity - $old_quantity;
+            $stmt = $pdo->prepare("
+                UPDATE tank t 
+                JOIN pump p ON t.fuel_id = p.fuel_id 
+                SET t.current_stock = t.current_stock - ? 
+                WHERE p.pump_id = ?
+            ");
+            $stmt->execute([$quantity_difference, $_POST['pump_id']]);
+        }
         
         $pdo->commit();
         $_SESSION['success'] = "Sale updated successfully!";
@@ -110,6 +128,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = "Error updating sale: " . $e->getMessage();
     }
 }
+
+include '../includes/header.php';
 ?>
 
 <div class="row mb-4">
@@ -198,8 +218,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         
                         <div class="col-md-6 mb-3">
                             <label for="total_amount" class="form-label">Total Amount (RWF)</label>
-                            <input type="text" class="form-control" id="total_amount" 
-                                   value="RWF <?php echo number_format($sale['total_amount'], 0); ?>" readonly>
+                            <input type="text" class="form-control" id="total_amount_display" 
+                                   value="RWF <?php echo number_format($sale['total_amount'], 0); ?>" readonly disabled>
                             <input type="hidden" name="total_amount" id="total_amount_hidden" 
                                    value="<?php echo $sale['total_amount']; ?>">
                         </div>
@@ -252,7 +272,7 @@ function calculateTotal() {
     
     if (price && quantity) {
         const total = quantity * price;
-        document.getElementById('total_amount').value = 'RWF ' + total.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+        document.getElementById('total_amount_display').value = 'RWF ' + total.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
         document.getElementById('total_amount_hidden').value = total;
     }
 }

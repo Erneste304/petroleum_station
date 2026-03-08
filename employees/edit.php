@@ -1,17 +1,18 @@
 <?php
 require_once '../includes/auth_middleware.php';
-requireAdmin();
 require_once '../config/database.php';
-include '../includes/header.php';
+requirePermission('employees');
 
 // Check if ID is provided
 if (!isset($_GET['id'])) {
-    $_SESSION['error'] = "No employee ID provided";
     header("Location: index.php");
     exit();
 }
 
 $id = $_GET['id'];
+
+// Fetch stations for dropdown
+$stations = $pdo->query("SELECT * FROM station ORDER BY station_name")->fetchAll();
 
 // Fetch employee data
 $stmt = $pdo->prepare("SELECT * FROM employee WHERE employee_id = ?");
@@ -19,13 +20,9 @@ $stmt->execute([$id]);
 $employee = $stmt->fetch();
 
 if (!$employee) {
-    $_SESSION['error'] = "Employee not found";
     header("Location: index.php");
     exit();
 }
-
-// Fetch stations for dropdown
-$stations = $pdo->query("SELECT * FROM station ORDER BY station_name")->fetchAll();
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -39,6 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = "Error: " . $e->getMessage();
     }
 }
+
+include '../includes/header.php';
 ?>
 
 <div class="row mb-4">

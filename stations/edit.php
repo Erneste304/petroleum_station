@@ -1,8 +1,7 @@
 <?php
 require_once '../includes/auth_middleware.php';
-requireAdmin();
 require_once '../config/database.php';
-include '../includes/header.php';
+requirePermission('stations');
 
 // Check if ID is provided
 if (!isset($_GET['id'])) {
@@ -36,6 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = "Error: " . $e->getMessage();
     }
 }
+
+include '../includes/header.php';
 ?>
 
 <div class="row mb-4">

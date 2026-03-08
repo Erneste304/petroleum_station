@@ -1,9 +1,7 @@
 <?php
 require_once '../includes/auth_middleware.php';
-requireAdmin();
 require_once '../config/database.php';
-include '../includes/header.php';
-
+requirePermission('stations');
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
         $stmt = $pdo->prepare("INSERT INTO station (station_name, location, phone) VALUES (?, ?, ?)");
@@ -15,6 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = "Error: " . $e->getMessage();
     }
 }
+
+include '../includes/header.php';
 ?>
 
 <div class="row mb-4">

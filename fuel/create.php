@@ -1,20 +1,32 @@
 <?php
 require_once '../includes/auth_middleware.php';
-requireAdmin();
 require_once '../config/database.php';
-include '../includes/header.php';
+requirePermission('fuel');
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
+        $pdo->beginTransaction();
+        
+        // Insert fuel type
         $stmt = $pdo->prepare("INSERT INTO fuel_type (fuel_name, price_per_liter) VALUES (?, ?)");
         $stmt->execute([$_POST['fuel_name'], $_POST['price_per_liter']]);
-        $_SESSION['success'] = "Fuel type added successfully!";
+        $fuel_id = $pdo->lastInsertId();
+        
+        // Insert associated tank with initial stock
+        $stmt = $pdo->prepare("INSERT INTO tank (fuel_id, capacity, current_stock) VALUES (?, ?, ?)");
+        $stmt->execute([$fuel_id, $_POST['capacity'], $_POST['initial_stock']]);
+        
+        $pdo->commit();
+        $_SESSION['success'] = "Fuel type and tank added successfully!";
         header("Location: index.php");
         exit();
-    } catch (PDOException $e) {
-        $error = "Error: " . $e->getMessage();
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        $error = "Error adding fuel type: " . $e->getMessage();
     }
 }
+
+include '../includes/header.php';
 ?>
 
 <div class="row mb-4">
@@ -53,7 +65,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     
                     <div class="mb-3">
                         <label for="price_per_liter" class="form-label">Price per Liter (RWF) *</label>
-                        <input type="number" step="0.01" min="0" class="form-control" id="price_per_liter" name="price_per_liter" required>
+                        <div class="input-group">
+                            <span class="input-group-text">RWF</span>
+                            <input type="number" step="0.01" min="0" class="form-control" id="price_per_liter" name="price_per_liter" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="capacity" class="form-label">Tank Capacity (Liters) *</label>
+                            <input type="number" step="1" min="0" class="form-control" id="capacity" name="capacity" placeholder="e.g. 5000" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="initial_stock" class="form-label">Initial Stock (Liters) *</label>
+                            <input type="number" step="1" min="0" class="form-control" id="initial_stock" name="initial_stock" placeholder="e.g. 1000" required>
+                        </div>
                     </div>
                     
                     <div class="d-grid gap-2">

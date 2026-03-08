@@ -1,8 +1,7 @@
 <?php
 require_once '../includes/auth_middleware.php';
-requireAdmin();
 require_once '../config/database.php';
-include '../includes/header.php';
+requirePermission('customers');
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
@@ -12,9 +11,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         header("Location: index.php");
         exit();
     } catch (PDOException $e) {
-        $error = "Error: " . $e->getMessage();
+        $error = "Error adding customer: " . $e->getMessage();
     }
 }
+
+include '../includes/header.php';
 ?>
 
 <div class="row mb-4">

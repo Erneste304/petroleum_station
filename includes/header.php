@@ -38,48 +38,60 @@
                             <i class="bi bi-speedometer2"></i> Dashboard
                         </a>
                     </li>
-                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                    <?php if (hasPermission('stations')): ?>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-building"></i> Stations
                             </a>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu shadow">
                                 <li><a class="dropdown-item" href="../stations/index.php">View All</a></li>
                                 <li><a class="dropdown-item" href="../stations/create.php">Add New</a></li>
                             </ul>
                         </li>
+                    <?php endif; ?>
+
+                    <?php if (hasPermission('employees')): ?>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-people"></i> Employees
                             </a>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu shadow">
                                 <li><a class="dropdown-item" href="../employees/index.php">View All</a></li>
                                 <li><a class="dropdown-item" href="../employees/create.php">Add New</a></li>
                             </ul>
                         </li>
+                    <?php endif; ?>
+
+                    <?php if (hasPermission('customers')): ?>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-person-badge"></i> Customers
                             </a>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu shadow">
                                 <li><a class="dropdown-item" href="../customers/index.php">View All</a></li>
                                 <li><a class="dropdown-item" href="../customers/create.php">Add New</a></li>
                             </ul>
                         </li>
+                    <?php endif; ?>
+
+                    <?php if (hasPermission('fuel')): ?>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-droplet"></i> Fuel
                             </a>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu shadow">
                                 <li><a class="dropdown-item" href="../fuel/index.php">View All</a></li>
                                 <li><a class="dropdown-item" href="../fuel/create.php">Add New</a></li>
                             </ul>
                         </li>
+                    <?php endif; ?>
+
+                    <?php if (hasPermission('sales')): ?>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-cart"></i> Sales
                             </a>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu shadow">
                                 <li><a class="dropdown-item" href="../sales/index.php">View All</a></li>
                                 <li><a class="dropdown-item" href="../sales/create.php">New Sale</a></li>
                             </ul>
@@ -88,19 +100,27 @@
 
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <!-- Visible to ALL logged-in users (Admins & Customers) -->
+                        <!-- Visible to users with specific service permissions -->
+                        <?php if (hasPermission('fuel_delivery') || hasPermission('car_wash') || hasPermission('loyalty')): ?>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-grid"></i> Services
                             </a>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu shadow">
+                                <?php if (hasPermission('fuel_delivery')): ?>
                                 <li><a class="dropdown-item" href="../fuel_delivery.php"><i class="bi bi-truck me-2 text-primary"></i> Fuel Delivery</a></li>
+                                <?php endif; ?>
+                                
                                 <li><a class="dropdown-item" href="../loyalty.php"><i class="bi bi-gift me-2 text-warning"></i> Loyalty & Rewards</a></li>
-                                <li>
-                                    <h6 class="dropdown-header">Partner Services</h6>
-                                </li>
+                                
+                                <?php if (hasPermission('car_wash')): ?>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><h6 class="dropdown-header">Partner Services</h6></li>
                                 <li><a class="dropdown-item" href="../car_wash.php"><i class="bi bi-car-front me-2 text-info"></i> Car Detailing</a></li>
+                                <?php endif; ?>
                             </ul>
                         </li>
+                        <?php endif; ?>
 
                         <li class="nav-item">
                             <a class="nav-link" href="../logout.php">

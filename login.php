@@ -239,41 +239,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class="container main-container">
         <div class="row align-items-center justify-content-center">
-            <!-- Hero Information -->
-            <div class="col-lg-6 mb-5 mb-lg-0">
-                <div class="hero-section">
-                    <span class="badge bg-primary bg-opacity-25 text-info mb-3 px-3 py-2 rounded-pill border border-info border-opacity-25">
-                        <i class="bi bi-star-fill me-1"></i> Version 2.0 Now Available
-                    </span>
-                    <h1 class="hero-title">Elevate Your Petroleum Station Business</h1>
-                    <p class="hero-subtitle">
-                        Experience a state-of-the-art platform designed to centralize and optimize your daily operations. Manage sales, track stock, and evaluate performance—all in one place.
-                    </p>
-
-                    <div class="feature-item">
-                        <div class="feature-icon"><i class="bi bi-graph-up-arrow"></i></div>
-                        <div>
-                            <strong>Real-Time Analytics</strong><br>
-                            Monitor daily & monthly sales intuitively.
-                        </div>
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon"><i class="bi bi-droplet-half"></i></div>
-                        <div>
-                            <strong>Smart Stock Management</strong><br>
-                            Get immediate low stock alerts and track deliveries.
-                        </div>
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon"><i class="bi bi-people-fill"></i></div>
-                        <div>
-                            <strong>Unified Personnel System</strong><br>
-                            Stay on top of employee roles, customer databases, and shifts.
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Login Form -->
             <div class="col-lg-5 col-md-8 mx-auto">
                 <div class="login-card">

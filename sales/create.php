@@ -1,7 +1,6 @@
-<?php
 require_once '../includes/auth_middleware.php';
-requireAdmin();
 require_once '../config/database.php';
+requirePermission('sales');
 include '../includes/header.php';
 
 // Fetch data for dropdowns

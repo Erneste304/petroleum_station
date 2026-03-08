@@ -1,8 +1,7 @@
 <?php
 require_once '../includes/auth_middleware.php';
-requireAdmin();
 require_once '../config/database.php';
-include '../includes/header.php';
+requirePermission('customers');
 
 // Handle delete request
 if (isset($_GET['delete'])) {
@@ -16,6 +15,8 @@ if (isset($_GET['delete'])) {
     header("Location: index.php");
     exit();
 }
+
+include '../includes/header.php';
 
 // Fetch all customers
 $customers = $pdo->query("SELECT * FROM customer ORDER BY name")->fetchAll();

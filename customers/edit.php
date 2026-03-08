@@ -1,30 +1,26 @@
 <?php
 require_once '../includes/auth_middleware.php';
-requireAdmin();
 require_once '../config/database.php';
-include '../includes/header.php';
+requirePermission('customers');
 
 // Check if ID is provided
 if (!isset($_GET['id'])) {
-    $_SESSION['error'] = "No customer ID provided";
     header("Location: index.php");
     exit();
 }
 
 $id = $_GET['id'];
 
-// Fetch customer data
+// Fetch customer details
 $stmt = $pdo->prepare("SELECT * FROM customer WHERE customer_id = ?");
 $stmt->execute([$id]);
 $customer = $stmt->fetch();
 
 if (!$customer) {
-    $_SESSION['error'] = "Customer not found";
     header("Location: index.php");
     exit();
 }
 
-// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
         $stmt = $pdo->prepare("UPDATE customer SET name = ?, phone = ?, vehicle_plate = ? WHERE customer_id = ?");
@@ -33,9 +29,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         header("Location: index.php");
         exit();
     } catch (PDOException $e) {
-        $error = "Error: " . $e->getMessage();
+        $error = "Error updating customer: " . $e->getMessage();
     }
 }
+
+include '../includes/header.php';
 ?>
 
 <div class="row mb-4">

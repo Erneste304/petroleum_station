@@ -238,27 +238,46 @@ if ($isAdmin) {
                     <i class="bi bi-lightning-charge"></i> Quick Actions
                 </div>
                 <div class="card-body">
-                    <div class="row g-2">
+                    <div class="row g-2 text-center">
+                        <?php if (hasPermission('sales')): ?>
                         <div class="col-md-3">
-                            <a href="sales/create.php" class="btn btn-outline-primary w-100">
-                                <i class="bi bi-cart-plus"></i> New Sale
+                            <a href="sales/create.php" class="btn btn-outline-primary w-100 py-3">
+                                <i class="bi bi-cart-plus d-block fs-3 mb-1"></i> New Sale
                             </a>
                         </div>
+                        <?php endif; ?>
+
+                        <?php if (hasPermission('customers')): ?>
                         <div class="col-md-3">
-                            <a href="customers/create.php" class="btn btn-outline-success w-100">
-                                <i class="bi bi-person-plus"></i> Add Customer
+                            <a href="customers/create.php" class="btn btn-outline-success w-100 py-3">
+                                <i class="bi bi-person-plus d-block fs-3 mb-1"></i> Add Customer
                             </a>
                         </div>
+                        <?php endif; ?>
+
+                        <?php if (hasPermission('employees')): ?>
                         <div class="col-md-3">
-                            <a href="employees/create.php" class="btn btn-outline-info w-100">
-                                <i class="bi bi-person-workspace"></i> Add Employee
+                            <a href="employees/create.php" class="btn btn-outline-info w-100 py-3">
+                                <i class="bi bi-person-workspace d-block fs-3 mb-1"></i> Add Employee
                             </a>
                         </div>
+                        <?php endif; ?>
+
+                        <?php if (hasPermission('reports')): ?>
                         <div class="col-md-3">
-                            <a href="#" class="btn btn-outline-warning w-100">
-                                <i class="bi bi-file-text"></i> View Reports
+                            <a href="reports.php" class="btn btn-outline-warning w-100 py-3">
+                                <i class="bi bi-file-text d-block fs-3 mb-1"></i> View Reports
                             </a>
                         </div>
+                        <?php endif; ?>
+
+                        <?php if (hasPermission('users')): ?>
+                        <div class="col-md-3">
+                            <a href="users/index.php" class="btn btn-outline-danger w-100 py-3">
+                                <i class="bi bi-shield-lock d-block fs-3 mb-1"></i> User Access
+                            </a>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

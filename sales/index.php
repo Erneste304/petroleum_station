@@ -1,8 +1,7 @@
 <?php
 require_once '../includes/auth_middleware.php';
-requireAdmin();
 require_once '../config/database.php';
-include '../includes/header.php';
+requirePermission('sales');
 
 // Handle delete request
 if (isset($_GET['delete'])) {
@@ -24,24 +23,22 @@ if (isset($_GET['delete'])) {
             ");
             $stmt->execute([$sale['quantity'], $sale['pump_id']]);
             
-            // Delete payment first (foreign key)
-            $stmt = $pdo->prepare("DELETE FROM payment WHERE sale_id = ?");
-            $stmt->execute([$_GET['delete']]);
-            
-            // Delete sale
+            // Delete the sale (cascades to payment)
             $stmt = $pdo->prepare("DELETE FROM sale WHERE sale_id = ?");
             $stmt->execute([$_GET['delete']]);
         }
         
         $pdo->commit();
-        $_SESSION['success'] = "Sale deleted successfully!";
-    } catch (PDOException $e) {
+        $_SESSION['success'] = "Sale deleted and stock restored!";
+    } catch (Exception $e) {
         $pdo->rollBack();
-        $_SESSION['error'] = "Cannot delete sale: " . $e->getMessage();
+        $_SESSION['error'] = "Error deleting sale: " . $e->getMessage();
     }
     header("Location: index.php");
     exit();
 }
+
+include '../includes/header.php';
 
 // Fetch all sales with details
 $sales = $pdo->query("

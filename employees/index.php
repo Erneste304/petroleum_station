@@ -1,8 +1,7 @@
 <?php
 require_once '../includes/auth_middleware.php';
-requireAdmin();
 require_once '../config/database.php';
-include '../includes/header.php';
+requirePermission('employees');
 
 // Handle delete request
 if (isset($_GET['delete'])) {
@@ -16,6 +15,8 @@ if (isset($_GET['delete'])) {
     header("Location: index.php");
     exit();
 }
+
+include '../includes/header.php';
 
 // Fetch all employees with station names
 $employees = $pdo->query("

@@ -1,21 +1,45 @@
 <?php
 require_once '../includes/auth_middleware.php';
-requireAdmin();
 require_once '../config/database.php';
-include '../includes/header.php';
+requirePermission('fuel');
 
 // Handle delete request
 if (isset($_GET['delete'])) {
     try {
+        $pdo->beginTransaction();
+        $fuel_id = $_GET['delete'];
+
+        // 1. Delete sales associated with pumps of this fuel type
+        $stmt = $pdo->prepare("
+            DELETE s FROM sale s 
+            JOIN pump p ON s.pump_id = p.pump_id 
+            WHERE p.fuel_id = ?
+        ");
+        $stmt->execute([$fuel_id]);
+
+        // 2. Delete pumps associated with this fuel type
+        $stmt = $pdo->prepare("DELETE FROM pump WHERE fuel_id = ?");
+        $stmt->execute([$fuel_id]);
+
+        // 3. Delete tanks associated with this fuel type
+        $stmt = $pdo->prepare("DELETE FROM tank WHERE fuel_id = ?");
+        $stmt->execute([$fuel_id]);
+
+        // 4. Finally delete the fuel type
         $stmt = $pdo->prepare("DELETE FROM fuel_type WHERE fuel_id = ?");
-        $stmt->execute([$_GET['delete']]);
-        $_SESSION['success'] = "Fuel type deleted successfully!";
-    } catch (PDOException $e) {
+        $stmt->execute([$fuel_id]);
+
+        $pdo->commit();
+        $_SESSION['success'] = "Fuel type and all associated data deleted successfully!";
+    } catch (Exception $e) {
+        $pdo->rollBack();
         $_SESSION['error'] = "Cannot delete fuel type: " . $e->getMessage();
     }
     header("Location: index.php");
     exit();
 }
+
+include '../includes/header.php';
 
 // Fetch all fuel types
 $fuel_types = $pdo->query("SELECT * FROM fuel_type ORDER BY fuel_name")->fetchAll();

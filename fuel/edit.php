@@ -1,41 +1,54 @@
 <?php
 require_once '../includes/auth_middleware.php';
-requireAdmin();
 require_once '../config/database.php';
-include '../includes/header.php';
+requirePermission('fuel');
 
 // Check if ID is provided
 if (!isset($_GET['id'])) {
-    $_SESSION['error'] = "No fuel ID provided";
     header("Location: index.php");
     exit();
 }
 
 $id = $_GET['id'];
 
-// Fetch fuel data
-$stmt = $pdo->prepare("SELECT * FROM fuel_type WHERE fuel_id = ?");
+// Fetch fuel details with tank capacity
+$stmt = $pdo->prepare("
+    SELECT f.*, t.capacity, t.tank_id 
+    FROM fuel_type f 
+    LEFT JOIN tank t ON f.fuel_id = t.fuel_id 
+    WHERE f.fuel_id = ?
+");
 $stmt->execute([$id]);
 $fuel = $stmt->fetch();
 
 if (!$fuel) {
-    $_SESSION['error'] = "Fuel type not found";
     header("Location: index.php");
     exit();
 }
 
-// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
+        $pdo->beginTransaction();
+        
+        // Update fuel type
         $stmt = $pdo->prepare("UPDATE fuel_type SET fuel_name = ?, price_per_liter = ? WHERE fuel_id = ?");
         $stmt->execute([$_POST['fuel_name'], $_POST['price_per_liter'], $id]);
+        
+        // Update tank capacity
+        $stmt = $pdo->prepare("UPDATE tank SET capacity = ? WHERE fuel_id = ?");
+        $stmt->execute([$_POST['capacity'], $id]);
+        
+        $pdo->commit();
         $_SESSION['success'] = "Fuel type updated successfully!";
         header("Location: index.php");
         exit();
-    } catch (PDOException $e) {
-        $error = "Error: " . $e->getMessage();
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        $error = "Error updating fuel type: " . $e->getMessage();
     }
 }
+
+include '../includes/header.php';
 ?>
 
 <div class="row mb-4">
@@ -74,8 +87,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     
                     <div class="mb-3">
                         <label for="price_per_liter" class="form-label">Price per Liter (RWF) *</label>
-                        <input type="number" step="0.01" min="0" class="form-control" id="price_per_liter" name="price_per_liter" 
-                               value="<?php echo $fuel['price_per_liter']; ?>" required>
+                        <div class="input-group">
+                            <span class="input-group-text">RWF</span>
+                            <input type="number" step="0.01" min="0" class="form-control" id="price_per_liter" name="price_per_liter" 
+                                   value="<?php echo $fuel['price_per_liter']; ?>" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="capacity" class="form-label">Tank Capacity (Liters) *</label>
+                        <input type="number" step="1" min="0" class="form-control" id="capacity" name="capacity" 
+                               value="<?php echo $fuel['capacity']; ?>" required>
                     </div>
                     
                     <div class="d-grid gap-2">
