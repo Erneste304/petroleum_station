@@ -32,4 +32,4 @@ For more information, visit [Erneste304Tech](https://github.com/Erneste304)
 1. **For the Web Application**: Navigate to the `petroleum_station_php` folder and follow the instructions in its specific `README.md`.
 2. **For Development Tools**: Check the `petroleum_station_python` folder for future scripts and data processing utilities.
 
-*Made with ❤️ by Erneste304tech*
+*Made with ❤️ by Erneste304tech@gmail.com*

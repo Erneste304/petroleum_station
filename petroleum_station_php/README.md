@@ -352,8 +352,8 @@ ORDER BY sales_count DESC;
 ### Get in Touch
 - **Developer:** Erneste Gisubizo
 - **Organization:** Erneste304Tech
-- **Email:** contact@erneste304tech.com *(update as needed)*
-- **GitHub:** https://github.com/Erneste304Tech *(update as needed)*
+- **Email:** erneste304tech@gmail.com *(update as needed)*
+- **GitHub:** https://github.com/Erneste304 *(update as needed)*
 
 ### Contributing
 Contributions are welcome! Please:
@@ -394,4 +394,4 @@ Built as part of:
 
 **Made with ❤️ by Erneste Gisubizo | Erneste304Tech**
 
-*Last Updated: March 3, 2026*
+*Last Updated: March 9, 2026*

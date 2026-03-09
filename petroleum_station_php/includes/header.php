@@ -23,12 +23,7 @@
             <a class="navbar-brand" href="../index.php">
                 <i class="bi bi-fuel-pump"></i> Petroleum Station MS
             </a>
-            <?php if (isset($_SESSION['user_id'])): ?>
-                <span class="navbar-text text-light ms-3">
-                    Hello, <?php echo htmlspecialchars($_SESSION['username']); ?>
-                </span>
-            <?php endif; ?>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -111,9 +106,14 @@
                         </li>
                     <?php endif; ?>
 
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <!-- Visible to ALL logged-in users (Admins & Customers) -->
-                        <!-- Visible to users with specific service permissions -->
+                    <?php if (isset($_SESSION['user_id'])): 
+                        // Fetch user profile photo if not already defined
+                        $header_stmt = $pdo->prepare("SELECT profile_photo FROM users WHERE user_id = ?");
+                        $header_stmt->execute([$_SESSION['user_id']]);
+                        $header_user = $header_stmt->fetch();
+                        $profile_photo = $header_user['profile_photo'] ?? null;
+                    ?>
+                        <!-- Services Dropdown -->
                         <?php if (hasPermission('fuel_delivery') || hasPermission('car_wash') || hasPermission('loyalty')): ?>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -123,9 +123,7 @@
                                 <?php if (hasPermission('fuel_delivery')): ?>
                                 <li><a class="dropdown-item" href="../fuel_delivery.php"><i class="bi bi-truck me-2 text-primary"></i> Fuel Delivery</a></li>
                                 <?php endif; ?>
-                                
                                 <li><a class="dropdown-item" href="../loyalty.php"><i class="bi bi-gift me-2 text-warning"></i> Loyalty & Rewards</a></li>
-                                
                                 <?php if (hasPermission('car_wash')): ?>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><h6 class="dropdown-header">Partner Services</h6></li>
@@ -136,31 +134,54 @@
                         </li>
                         <?php endif; ?>
 
+                        <!-- Role-Specific Links -->
+                        <?php if (isReceptionist()): ?>
+                            <li class="nav-item">
+                                <a class="nav-link" href="../receptionist_dashboard.php"><i class="bi bi-headset"></i> Receptionist</a>
+                            </li>
+                        <?php endif; ?>
+
                         <?php if (isAccountant()): ?>
                             <li class="nav-item">
-                                <a class="nav-link" href="../accountant_dashboard.php">
-                                    <i class="bi bi-wallet2"></i> Finances
-                                </a>
+                                <a class="nav-link" href="../accountant_dashboard.php"><i class="bi bi-wallet2"></i> Finances</a>
                             </li>
                         <?php endif; ?>
 
                         <?php if (isAdmin()): ?>
-                            <li class="nav-item">
-                                <a class="nav-link" href="../admin_finance_mgm.php">
-                                    <i class="bi bi-shield-check"></i> Finance Auth
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-shield-check"></i> Admin
                                 </a>
+                                <ul class="dropdown-menu shadow border-0">
+                                    <li><a class="dropdown-item" href="../admin_finance_mgm.php">Finance Auth</a></li>
+                                    <li><a class="dropdown-item" href="../admin_payroll_approval.php">Payroll Approval</a></li>
+                                </ul>
                             </li>
                         <?php endif; ?>
 
-                        <li class="nav-item">
-                            <a class="nav-link" href="../logout.php">
-                                <i class="bi bi-box-arrow-right"></i> Logout
+                        <!-- Unified User Dropdown -->
+                        <li class="nav-item dropdown ms-lg-3">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center bg-white bg-opacity-10 rounded-pill px-3 py-1 mt-1 mt-lg-0" href="#" role="button" data-bs-toggle="dropdown">
+                                <?php if ($profile_photo): ?>
+                                    <img src="../img/profiles/<?php echo $profile_photo; ?>" class="rounded-circle me-2" style="width: 28px; height: 28px; object-fit: cover;">
+                                <?php else: ?>
+                                    <i class="bi bi-person-circle me-2"></i>
+                                <?php endif; ?>
+                                <span class="small fw-bold text-white"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
                             </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" style="border-radius: 15px; overflow: hidden;">
+                                <li><h6 class="dropdown-header border-bottom pb-2">User Settings</h6></li>
+                                <li><a class="dropdown-item py-2" href="../profile.php"><i class="bi bi-person-badge me-2 text-primary"></i> My Profile</a></li>
+                                <li><a class="dropdown-item py-2" href="../settings.php"><i class="bi bi-gear me-2 text-info"></i> Account Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item py-2 text-danger fw-bold" href="../logout.php"><i class="bi bi-box-arrow-right me-2"></i> Sign Out</a></li>
+                            </ul>
                         </li>
+
                     <?php else: ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="../login.php">
-                                <i class="bi bi-box-arrow-in-right"></i> Login
+                            <a class="btn btn-light rounded-pill px-4 btn-sm fw-bold my-1" href="../login.php">
+                                Login <i class="bi bi-arrow-right-short"></i>
                             </a>
                         </li>
                     <?php endif; ?>

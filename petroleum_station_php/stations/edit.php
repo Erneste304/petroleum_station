@@ -25,6 +25,11 @@ if (!$station) {
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (isPartner()) {
+        $_SESSION['error'] = "Access denied. Partners have read-only access to station records.";
+        header("Location: index.php");
+        exit();
+    }
     try {
         $stmt = $pdo->prepare("UPDATE station SET station_name = ?, location = ?, phone = ? WHERE station_id = ?");
         $stmt->execute([$_POST['station_name'], $_POST['location'], $_POST['phone'], $id]);
@@ -60,31 +65,40 @@ include '../includes/header.php';
                 <?php if (isset($error)): ?>
                     <div class="alert alert-danger"><?php echo $error; ?></div>
                 <?php endif; ?>
+
+                <?php if (isPartner()): ?>
+                    <div class="alert alert-info border-0 shadow-sm rounded-4 mb-4">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Read-Only Access:</strong> As a business partner, you can view station details but cannot modify them.
+                    </div>
+                <?php endif; ?>
                 
                 <form method="POST" action="">
                     <div class="mb-3">
                         <label for="station_name" class="form-label">Station Name *</label>
                         <input type="text" class="form-control" id="station_name" name="station_name" 
-                               value="<?php echo htmlspecialchars($station['station_name']); ?>" required>
+                               value="<?php echo htmlspecialchars($station['station_name']); ?>" required <?php echo isPartner() ? 'readonly' : ''; ?>>
                     </div>
                     
                     <div class="mb-3">
                         <label for="location" class="form-label">Location *</label>
                         <input type="text" class="form-control" id="location" name="location" 
-                               value="<?php echo htmlspecialchars($station['location']); ?>" required>
+                               value="<?php echo htmlspecialchars($station['location']); ?>" required <?php echo isPartner() ? 'readonly' : ''; ?>>
                     </div>
                     
                     <div class="mb-3">
                         <label for="phone" class="form-label">Phone Number *</label>
                         <input type="tel" class="form-control" id="phone" name="phone" 
-                               value="<?php echo htmlspecialchars($station['phone']); ?>" required>
+                               value="<?php echo htmlspecialchars($station['phone']); ?>" required <?php echo isPartner() ? 'readonly' : ''; ?>>
                     </div>
                     
+                    <?php if (!isPartner()): ?>
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-save"></i> Update Station
                         </button>
                     </div>
+                    <?php endif; ?>
                 </form>
             </div>
         </div>

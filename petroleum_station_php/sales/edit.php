@@ -1,3 +1,4 @@
+<?php
 require_once '../includes/auth_middleware.php';
 require_once '../config/database.php';
 requirePermission('sales');
@@ -44,6 +45,11 @@ $pumps = $pdo->query("
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (isPartner()) {
+        $_SESSION['error'] = "Access denied. Partners have read-only access to sales records.";
+        header("Location: index.php");
+        exit();
+    }
     try {
         $pdo->beginTransaction();
         
@@ -154,11 +160,18 @@ include '../includes/header.php';
                     <div class="alert alert-danger"><?php echo $error; ?></div>
                 <?php endif; ?>
                 
+                <?php if (isPartner()): ?>
+                    <div class="alert alert-info border-0 shadow-sm rounded-4 mb-4">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Read-Only Access:</strong> As a business partner, you can view this transaction but cannot modify it.
+                    </div>
+                <?php endif; ?>
+                
                 <form method="POST" id="saleForm">
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="customer_id" class="form-label">Customer</label>
-                            <select class="form-select" name="customer_id" id="customer_id">
+                            <select class="form-select" name="customer_id" id="customer_id" <?php echo isPartner() ? 'disabled' : ''; ?>>
                                 <option value="">Walk-in Customer</option>
                                 <?php foreach ($customers as $customer): ?>
                                 <option value="<?php echo $customer['customer_id']; ?>"
@@ -171,7 +184,7 @@ include '../includes/header.php';
                         
                         <div class="col-md-6 mb-3">
                             <label for="employee_id" class="form-label">Employee *</label>
-                            <select class="form-select" name="employee_id" id="employee_id" required>
+                            <select class="form-select" name="employee_id" id="employee_id" required <?php echo isPartner() ? 'disabled' : ''; ?>>
                                 <option value="">Select Employee</option>
                                 <?php foreach ($employees as $employee): ?>
                                 <option value="<?php echo $employee['employee_id']; ?>"
@@ -186,7 +199,7 @@ include '../includes/header.php';
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="pump_id" class="form-label">Fuel Type *</label>
-                            <select class="form-select" name="pump_id" id="pump_id" required onchange="updatePrice()">
+                            <select class="form-select" name="pump_id" id="pump_id" required onchange="updatePrice()" <?php echo isPartner() ? 'disabled' : ''; ?>>
                                 <option value="">Select Fuel</option>
                                 <?php foreach ($pumps as $pump): ?>
                                 <option value="<?php echo $pump['pump_id']; ?>" 
@@ -204,7 +217,7 @@ include '../includes/header.php';
                             <label for="quantity" class="form-label">Quantity (Liters) *</label>
                             <input type="number" step="0.01" min="0.01" class="form-control" 
                                    id="quantity" name="quantity" value="<?php echo $sale['quantity']; ?>" 
-                                   required onchange="calculateTotal()">
+                                   required onchange="calculateTotal()" <?php echo isPartner() ? 'readonly' : ''; ?>>
                             <small class="text-muted" id="stockWarning"></small>
                         </div>
                     </div>
@@ -227,18 +240,20 @@ include '../includes/header.php';
                     
                     <div class="mb-3">
                         <label for="payment_method" class="form-label">Payment Method *</label>
-                        <select class="form-select" name="payment_method" required>
+                        <select class="form-select" name="payment_method" required <?php echo isPartner() ? 'disabled' : ''; ?>>
                             <option value="Cash" <?php echo $sale['payment_method'] == 'Cash' ? 'selected' : ''; ?>>Cash</option>
                             <option value="Mobile Money" <?php echo $sale['payment_method'] == 'Mobile Money' ? 'selected' : ''; ?>>Mobile Money</option>
                             <option value="Card" <?php echo $sale['payment_method'] == 'Card' ? 'selected' : ''; ?>>Credit/Debit Card</option>
                         </select>
                     </div>
                     
+                    <?php if (!isPartner()): ?>
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-save"></i> Update Sale
                         </button>
                     </div>
+                    <?php endif; ?>
                 </form>
             </div>
         </div>

@@ -27,6 +27,11 @@ if (!$fuel) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (isPartner()) {
+        $_SESSION['error'] = "Access denied. Partners have read-only access to fuel settings.";
+        header("Location: index.php");
+        exit();
+    }
     try {
         $pdo->beginTransaction();
         
@@ -72,11 +77,18 @@ include '../includes/header.php';
                 <?php if (isset($error)): ?>
                     <div class="alert alert-danger"><?php echo $error; ?></div>
                 <?php endif; ?>
+
+                <?php if (isPartner()): ?>
+                    <div class="alert alert-info border-0 shadow-sm rounded-4 mb-4">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Read-Only Access:</strong> As a business partner, you can view these details but cannot modify them.
+                    </div>
+                <?php endif; ?>
                 
                 <form method="POST" action="">
                     <div class="mb-3">
                         <label for="fuel_name" class="form-label">Fuel Name *</label>
-                        <select class="form-select" id="fuel_name" name="fuel_name" required>
+                        <select class="form-select" id="fuel_name" name="fuel_name" required <?php echo isPartner() ? 'disabled' : ''; ?>>
                             <option value="">Select Fuel Type</option>
                             <option value="Petrol" <?php echo $fuel['fuel_name'] == 'Petrol' ? 'selected' : ''; ?>>Petrol</option>
                             <option value="Diesel" <?php echo $fuel['fuel_name'] == 'Diesel' ? 'selected' : ''; ?>>Diesel</option>
@@ -90,21 +102,23 @@ include '../includes/header.php';
                         <div class="input-group">
                             <span class="input-group-text">RWF</span>
                             <input type="number" step="0.01" min="0" class="form-control" id="price_per_liter" name="price_per_liter" 
-                                   value="<?php echo $fuel['price_per_liter']; ?>" required>
+                                   value="<?php echo $fuel['price_per_liter']; ?>" required <?php echo isPartner() ? 'readonly' : ''; ?>>
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label for="capacity" class="form-label">Tank Capacity (Liters) *</label>
                         <input type="number" step="1" min="0" class="form-control" id="capacity" name="capacity" 
-                               value="<?php echo $fuel['capacity']; ?>" required>
+                               value="<?php echo $fuel['capacity']; ?>" required <?php echo isPartner() ? 'readonly' : ''; ?>>
                     </div>
                     
+                    <?php if (!isPartner()): ?>
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-save"></i> Update Fuel Type
                         </button>
                     </div>
+                    <?php endif; ?>
                 </form>
             </div>
         </div>

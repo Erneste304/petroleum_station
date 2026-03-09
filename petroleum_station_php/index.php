@@ -77,59 +77,31 @@ if ($isAdmin) {
 
 <?php if ($isAdmin): ?>
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card text-white bg-primary">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-title">Stations</h6>
-                            <h2 class="mb-0"><?php echo $stats['stations']; ?></h2>
+    <div class="row g-4 mb-4">
+        <?php 
+        $stat_items = [
+            ['label' => 'Stations', 'value' => $stats['stations'], 'icon' => 'bi-building', 'color' => 'primary'],
+            ['label' => 'Employees', 'value' => $stats['employees'], 'icon' => 'bi-people', 'color' => 'success'],
+            ['label' => 'Customers', 'value' => $stats['customers'], 'icon' => 'bi-person-badge', 'color' => 'info'],
+            ['label' => 'Fuel Types', 'value' => $stats['fuel_types'], 'icon' => 'bi-droplet', 'color' => 'warning']
+        ];
+        foreach ($stat_items as $item): ?>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-<?php echo $item['color']; ?> bg-opacity-10 p-3 rounded-4 me-3">
+                            <i class="bi <?php echo $item['icon']; ?> text-<?php echo $item['color']; ?> fs-3"></i>
                         </div>
-                        <i class="bi bi-building fs-1"></i>
+                        <div>
+                            <p class="text-muted small text-uppercase fw-bold mb-0"><?php echo $item['label']; ?></p>
+                            <h3 class="fw-bold mb-0"><?php echo $item['value']; ?></h3>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-success">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-title">Employees</h6>
-                            <h2 class="mb-0"><?php echo $stats['employees']; ?></h2>
-                        </div>
-                        <i class="bi bi-people fs-1"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-info">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-title">Customers</h6>
-                            <h2 class="mb-0"><?php echo $stats['customers']; ?></h2>
-                        </div>
-                        <i class="bi bi-person-badge fs-1"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-warning">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-title">Fuel Types</h6>
-                            <h2 class="mb-0"><?php echo $stats['fuel_types']; ?></h2>
-                        </div>
-                        <i class="bi bi-droplet fs-1"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <?php endforeach; ?>
     </div>
 
     <!-- Sales Overview -->
@@ -185,103 +157,71 @@ if ($isAdmin) {
     <?php endif; ?>
 
     <!-- Recent Sales Table -->
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-clock-history"></i> Recent Sales</span>
-            <a href="sales/create.php" class="btn btn-sm btn-primary">
-                <i class="bi bi-plus-circle"></i> New Sale
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0"><i class="bi bi-clock-history text-primary"></i> Recent Sales</h5>
+            <a href="sales/create.php" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">
+                <i class="bi bi-plus-circle me-1"></i> New Sale
             </a>
         </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover datatable">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Customer</th>
-                            <th>Employee</th>
-                            <th>Fuel Type</th>
-                            <th>Quantity</th>
-                            <th>Amount</th>
-                            <th>Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($recentSales as $sale): ?>
-                            <tr>
-                                <td>#<?php echo $sale['sale_id']; ?></td>
-                                <td><?php echo $sale['customer_name'] ?? 'Walk-in'; ?></td>
-                                <td><?php echo $sale['employee_name']; ?></td>
-                                <td><span class="badge bg-info"><?php echo $sale['fuel_name']; ?></span></td>
-                                <td><?php echo $sale['quantity']; ?> L</td>
-                                <td>RWF <?php echo number_format($sale['total_amount'], 0); ?></td>
-                                <td><?php echo date('M d, H:i', strtotime($sale['sale_date'])); ?></td>
-                                <td>
-                                    <a href="sales/view.php?id=<?php echo $sale['sale_id']; ?>" class="btn btn-sm btn-outline-info">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted small text-uppercase">
+                    <tr>
+                        <th class="ps-4">Transaction</th>
+                        <th>User Info</th>
+                        <th>Details</th>
+                        <th>Amount</th>
+                        <th class="pe-4">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($recentSales as $sale): ?>
+                    <tr>
+                        <td class="ps-4">
+                            <div class="fw-bold text-dark">#<?php echo $sale['sale_id']; ?></div>
+                            <small class="text-muted"><?php echo date('M d, H:i', strtotime($sale['sale_date'])); ?></small>
+                        </td>
+                        <td>
+                            <div class="small fw-bold"><?php echo $sale['customer_name'] ?? 'Walk-in'; ?></div>
+                            <div class="small text-muted"><i class="bi bi-person me-1"></i><?php echo $sale['employee_name']; ?></div>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2"><?php echo $sale['fuel_name']; ?></span>
+                            <small class="ms-1 fw-bold"><?php echo $sale['quantity']; ?> L</small>
+                        </td>
+                        <td class="fw-bold text-success">RWF <?php echo number_format($sale['total_amount'], 0); ?></td>
+                        <td class="pe-4">
+                            <a href="sales/view.php?id=<?php echo $sale['sale_id']; ?>" class="btn btn-sm btn-light rounded-circle shadow-sm">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <i class="bi bi-lightning-charge"></i> Quick Actions
-                </div>
-                <div class="card-body">
-                    <div class="row g-2 text-center">
-                        <?php if (hasPermission('sales')): ?>
-                        <div class="col-md-3">
-                            <a href="sales/create.php" class="btn btn-outline-primary w-100 py-3">
-                                <i class="bi bi-cart-plus d-block fs-3 mb-1"></i> New Sale
-                            </a>
-                        </div>
-                        <?php endif; ?>
-
-                        <?php if (hasPermission('customers')): ?>
-                        <div class="col-md-3">
-                            <a href="customers/create.php" class="btn btn-outline-success w-100 py-3">
-                                <i class="bi bi-person-plus d-block fs-3 mb-1"></i> Add Customer
-                            </a>
-                        </div>
-                        <?php endif; ?>
-
-                        <?php if (hasPermission('employees')): ?>
-                        <div class="col-md-3">
-                            <a href="employees/create.php" class="btn btn-outline-info w-100 py-3">
-                                <i class="bi bi-person-workspace d-block fs-3 mb-1"></i> Add Employee
-                            </a>
-                        </div>
-                        <?php endif; ?>
-
-                        <?php if (hasPermission('reports')): ?>
-                        <div class="col-md-3">
-                            <a href="reports.php" class="btn btn-outline-warning w-100 py-3">
-                                <i class="bi bi-file-text d-block fs-3 mb-1"></i> View Reports
-                            </a>
-                        </div>
-                        <?php endif; ?>
-
-                        <?php if (hasPermission('users')): ?>
-                        <div class="col-md-3">
-                            <a href="users/index.php" class="btn btn-outline-danger w-100 py-3">
-                                <i class="bi bi-shield-lock d-block fs-3 mb-1"></i> User Access
-                            </a>
-                        </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
+    <!-- Quick Actions Simplified -->
+    <div class="row g-3">
+        <?php 
+        $actions = [
+            ['perm' => 'sales', 'url' => 'sales/create.php', 'icon' => 'bi-cart-plus', 'label' => 'Sale', 'color' => 'primary'],
+            ['perm' => 'customers', 'url' => 'customers/create.php', 'icon' => 'bi-person-plus', 'label' => 'Customer', 'color' => 'success'],
+            ['perm' => 'employees', 'url' => 'employees/create.php', 'icon' => 'bi-person-workspace', 'label' => 'Employee', 'color' => 'info'],
+            ['perm' => 'reports', 'url' => 'reports.php', 'icon' => 'bi-file-text', 'label' => 'Report', 'color' => 'warning'],
+            ['perm' => 'users', 'url' => 'users/index.php', 'icon' => 'bi-shield-lock', 'label' => 'Access', 'color' => 'danger']
+        ];
+        foreach ($actions as $act): 
+            if (hasPermission($act['perm'])): ?>
+            <div class="col-4 col-md-2">
+                <a href="<?php echo $act['url']; ?>" class="btn btn-white w-100 py-3 shadow-sm rounded-4 border-0 d-flex flex-column align-items-center transition-hover">
+                    <i class="bi <?php echo $act['icon']; ?> fs-4 text-<?php echo $act['color']; ?> mb-1"></i>
+                    <span class="small fw-bold text-dark"><?php echo $act['label']; ?></span>
+                </a>
             </div>
-        </div>
+        <?php endif; endforeach; ?>
     </div>
 <?php else: ?>
     <?php
@@ -380,7 +320,7 @@ if ($isAdmin) {
     <!-- Main Content Area -->
     <div class="row">
         <!-- Recent Transactions -->
-        <div class="col-md-8 mb-4">
+        <div class="col-md-12 mb-4">
             <div class="card shadow-sm h-100">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="bi bi-clock-history text-primary me-2"></i> Recent Transactions</h5>
@@ -425,39 +365,6 @@ if ($isAdmin) {
             </div>
         </div>
 
-        <!-- ID Card / Side Info -->
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm h-100 border-0 bg-light">
-                <div class="card-body text-center p-4">
-                    <div class="mb-4 mt-2">
-                        <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 100px; height: 100px;">
-                            <i class="bi bi-person-fill text-primary" style="font-size: 3rem;"></i>
-                        </div>
-                    </div>
-                    <h4 class="mb-1 fw-bold"><?php echo htmlspecialchars($_SESSION['username']); ?></h4>
-                    <p class="text-muted mb-4">Verified Customer</p>
-
-                    <div class="bg-white p-3 rounded text-start shadow-sm mb-4">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Customer ID:</span>
-                            <span class="fw-bold">#<?php echo str_pad($customerId, 5, '0', STR_PAD_LEFT); ?></span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Status:</span>
-                            <span class="badge bg-success">Active</span>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <span class="text-muted">Reward Tier:</span>
-                            <span>Bronze <i class="bi bi-star-fill text-warning ms-1"></i></span>
-                        </div>
-                    </div>
-
-                    <a href="logout.php" class="btn btn-outline-danger w-100 mt-auto">
-                        <i class="bi bi-box-arrow-right me-2"></i> Log out
-                    </a>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Our Services Section -->
