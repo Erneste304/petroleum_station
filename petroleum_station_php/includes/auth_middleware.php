@@ -32,6 +32,35 @@ function isCustomer()
 }
 
 
+function isAccountant()
+{
+    return isset($_SESSION['role']) && $_SESSION['role'] === 'accountant';
+}
+
+
+/**
+ * Check if the Accountant has active permission for a specific financial action
+ */
+function isFinancePermitted($action)
+{
+    global $pdo;
+    if (isAdmin()) return true;
+    if (!isAccountant()) return false;
+    
+    try {
+        $stmt = $pdo->prepare("
+            SELECT 1 FROM finance_permission_request 
+            WHERE accountant_id = ? AND module_name = ? AND status = 'Granted' 
+            AND (expiry IS NULL OR expiry > NOW())
+        ");
+        $stmt->execute([$_SESSION['user_id'], $action]);
+        return $stmt->fetch() !== false;
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
+
 function requireAdmin()
 {
     if (!isAdmin()) {
@@ -68,6 +97,13 @@ function hasPermission($module_name)
 
 function requirePermission($module_name)
 {
+    // Explicit Restriction: Partners cannot manage employees or users
+    if (isPartner() && in_array($module_name, ['employees', 'users'])) {
+        $_SESSION['error'] = "Access denied. Partners are restricted from managing personnel.";
+        header('Location: ../index.php');
+        exit;
+    }
+
     if (!hasPermission($module_name)) {
         $_SESSION['error'] = "Access denied. You do not have permission to view the {$module_name} dashboard.";
         header('Location: ../index.php');

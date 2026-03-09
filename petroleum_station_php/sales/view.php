@@ -1,7 +1,24 @@
 <?php
 require_once '../includes/auth_middleware.php';
-requireAdmin();
 require_once '../config/database.php';
+
+// Access control: Admin, Staff, or the specific Customer who owns the sale
+$id = $_GET['id'] ?? null;
+if (!$id) {
+    $_SESSION['error'] = "No sale ID provided";
+    header("Location: index.php");
+    exit();
+}
+
+$stmt = $pdo->prepare("SELECT customer_id FROM sale WHERE sale_id = ?");
+$stmt->execute([$id]);
+$sale_meta = $stmt->fetch();
+
+if (!isAdmin() && !isStaff() && (!isCustomer() || $_SESSION['customer_id'] != ($sale_meta['customer_id'] ?? -1))) {
+    $_SESSION['error'] = "Access denied. You can only view your own receipts.";
+    header("Location: ../index.php");
+    exit();
+}
 include '../includes/header.php';
 
 // Check if ID is provided

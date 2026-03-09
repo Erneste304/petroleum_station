@@ -60,6 +60,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             WHERE p.pump_id = ?
         ");
         $stmt->execute([$_POST['quantity'], $_POST['pump_id']]);
+
+        // If this sale was from a request, mark the request as completed
+        if (isset($_POST['request_id']) && !empty($_POST['request_id'])) {
+            $stmt = $pdo->prepare("UPDATE fuel_request SET status = 'Completed' WHERE request_id = ?");
+            $stmt->execute([$_POST['request_id']]);
+        }
         
         $pdo->commit();
         $_SESSION['success'] = "Sale recorded successfully!";
@@ -70,6 +76,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = "Error recording sale: " . $e->getMessage();
     }
 }
+
+// Handle pre-filled request data
+$pre_request_id = $_GET['request_id'] ?? '';
+$pre_customer_id = $_GET['customer_id'] ?? '';
+$pre_fuel_id = $_GET['fuel_id'] ?? '';
+$pre_qty = $_GET['qty'] ?? '';
 ?>
 
 <div class="row mb-4">
@@ -101,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <select class="form-select" name="customer_id" id="customer_id">
                                 <option value="">Walk-in Customer</option>
                                 <?php foreach ($customers as $customer): ?>
-                                <option value="<?php echo $customer['customer_id']; ?>">
+                                <option value="<?php echo $customer['customer_id']; ?>" <?php echo ($pre_customer_id == $customer['customer_id']) ? 'selected' : ''; ?>>
                                     <?php echo htmlspecialchars($customer['name']); ?>
                                 </option>
                                 <?php endforeach; ?>
@@ -129,7 +141,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <?php foreach ($pumps as $pump): ?>
                                 <option value="<?php echo $pump['pump_id']; ?>" 
                                         data-price="<?php echo $pump['price_per_liter']; ?>"
-                                        data-stock="<?php echo $pump['current_stock']; ?>">
+                                        data-stock="<?php echo $pump['current_stock']; ?>"
+                                        <?php echo ($pre_fuel_id == $pump['fuel_id']) ? 'selected' : ''; ?>>
                                     <?php echo $pump['fuel_name']; ?> - RWF <?php echo number_format($pump['price_per_liter'], 0); ?>/L 
                                     (Stock: <?php echo $pump['current_stock']; ?> L)
                                 </option>
@@ -140,10 +153,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <div class="col-md-6 mb-3">
                             <label for="quantity" class="form-label">Quantity (Liters) *</label>
                             <input type="number" step="0.01" min="0.01" class="form-control" 
-                                   id="quantity" name="quantity" required onchange="calculateTotal()">
+                                   id="quantity" name="quantity" required onchange="calculateTotal()"
+                                   value="<?php echo htmlspecialchars($pre_qty); ?>">
                             <small class="text-muted" id="stockWarning"></small>
                         </div>
                     </div>
+                    
+                    <input type="hidden" name="request_id" value="<?php echo htmlspecialchars($pre_request_id); ?>">
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">

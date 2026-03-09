@@ -67,6 +67,59 @@ $sales = $pdo->query("
     </div>
 </div>
 
+<?php
+// Fetch pending requests for staff/admins
+$pending_requests = $pdo->query("
+    SELECT r.*, c.name as customer_name, f.fuel_name 
+    FROM fuel_request r 
+    JOIN customer c ON r.customer_id = c.customer_id 
+    JOIN fuel_type f ON r.fuel_id = f.fuel_id 
+    WHERE r.status = 'Pending' 
+    ORDER BY r.created_at ASC
+")->fetchAll();
+?>
+
+<?php if (!empty($pending_requests)): ?>
+<div class="card border-warning mb-4 shadow-sm">
+    <div class="card-header bg-warning text-dark fw-bold">
+        <i class="bi bi-exclamation-circle me-2"></i> Pending Customer Fuel Requests
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-3">Customer</th>
+                        <th>Fuel</th>
+                        <th>Qty (L)</th>
+                        <th>Payment</th>
+                        <th>Date</th>
+                        <th class="text-end pe-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($pending_requests as $req): ?>
+                    <tr>
+                        <td class="ps-3 fw-bold"><?php echo htmlspecialchars($req['customer_name']); ?></td>
+                        <td><?php echo htmlspecialchars($req['fuel_name']); ?></td>
+                        <td><?php echo $req['requested_quantity']; ?></td>
+                        <td><?php echo $req['payment_method']; ?></td>
+                        <td class="small"><?php echo date('M d, H:i', strtotime($req['created_at'])); ?></td>
+                        <td class="text-end pe-3">
+                            <a href="create.php?request_id=<?php echo $req['request_id']; ?>&customer_id=<?php echo $req['customer_id']; ?>&fuel_id=<?php echo $req['fuel_id']; ?>&qty=<?php echo $req['requested_quantity']; ?>" 
+                               class="btn btn-sm btn-success">
+                                <i class="bi bi-check-lg"></i> Process Sale
+                            </a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
 <div class="card">
     <div class="card-header">
         <i class="bi bi-list"></i> All Sales Records

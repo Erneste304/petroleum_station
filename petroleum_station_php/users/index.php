@@ -171,6 +171,8 @@ include '../includes/header.php';
                                 </span>
                             <?php elseif ($user['role'] === 'staff'): ?>
                                 <span class="badge bg-info text-dark border badge-user rounded-pill">STAFF MEMBER</span>
+                            <?php elseif ($user['role'] === 'accountant'): ?>
+                                <span class="badge bg-primary text-white border badge-user rounded-pill">ACCOUNTANT</span>
                             <?php elseif ($user['role'] === 'partner'): ?>
                                 <span class="badge bg-warning text-dark border badge-user rounded-pill">BUSINESS PARTNER</span>
                             <?php else: ?>
@@ -218,6 +220,7 @@ include '../includes/header.php';
                                                                 <select name="role" class="form-select shadow-sm" style="border-radius: 8px;">
                                                                     <option value="admin" '.($user['role'] === 'admin' ? 'selected' : '').'>Admin</option>
                                                                     <option value="staff" '.($user['role'] === 'staff' ? 'selected' : '').'>Staff</option>
+                                                                    <option value="accountant" '.($user['role'] === 'accountant' ? 'selected' : '').'>Accountant</option>
                                                                     <option value="partner" '.($user['role'] === 'partner' ? 'selected' : '').'>Partner</option>
                                                                     <option value="customer" '.($user['role'] === 'customer' ? 'selected' : '').'>Customer</option>
                                                                 </select>

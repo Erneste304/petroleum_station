@@ -98,6 +98,19 @@
                         </li>
                     <?php endif; ?>
 
+                    <?php if (isCustomer()): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../fuel_purchase.php">
+                                <i class="bi bi-droplet-half"></i> Buy Fuel
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../my_purchases.php">
+                                <i class="bi bi-clock-history"></i> My Purchases
+                            </a>
+                        </li>
+                    <?php endif; ?>
+
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <!-- Visible to ALL logged-in users (Admins & Customers) -->
                         <!-- Visible to users with specific service permissions -->
@@ -117,9 +130,26 @@
                                 <li><hr class="dropdown-divider"></li>
                                 <li><h6 class="dropdown-header">Partner Services</h6></li>
                                 <li><a class="dropdown-item" href="../car_wash.php"><i class="bi bi-car-front me-2 text-info"></i> Car Detailing</a></li>
+                                <li><a class="dropdown-item" href="../partner_shares.php"><i class="bi bi-graph-up-arrow me-2 text-warning"></i> Buy Shares</a></li>
                                 <?php endif; ?>
                             </ul>
                         </li>
+                        <?php endif; ?>
+
+                        <?php if (isAccountant()): ?>
+                            <li class="nav-item">
+                                <a class="nav-link" href="../accountant_dashboard.php">
+                                    <i class="bi bi-wallet2"></i> Finances
+                                </a>
+                            </li>
+                        <?php endif; ?>
+
+                        <?php if (isAdmin()): ?>
+                            <li class="nav-item">
+                                <a class="nav-link" href="../admin_finance_mgm.php">
+                                    <i class="bi bi-shield-check"></i> Finance Auth
+                                </a>
+                            </li>
                         <?php endif; ?>
 
                         <li class="nav-item">
