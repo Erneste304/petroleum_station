@@ -26,23 +26,30 @@ $available_modules = [
     'reports' => ['icon' => 'bi-graph-up', 'label' => 'Analytics Reports']
 ];
 
-// Handle permission updates
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_permissions'])) {
+// Initialize modals string
+$modals = '';
+
+// Handle role and permission updates
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_user'])) {
     $target_user_id = $_POST['user_id'];
+    $new_role = $_POST['role'] ?? 'customer';
     $selected_modules = isset($_POST['modules']) ? $_POST['modules'] : [];
     
     try {
         $pdo->beginTransaction();
         
+        // Update Role
+        $stmt = $pdo->prepare("UPDATE users SET role = ? WHERE user_id = ?");
+        $stmt->execute([$new_role, $target_user_id]);
+
         // Clear old permissions
         $stmt = $pdo->prepare("DELETE FROM user_permission WHERE user_id = ?");
         $stmt->execute([$target_user_id]);
         
         // Insert new permissions
-        if (!empty($selected_modules)) {
+        if (!empty($selected_modules) && $new_role !== 'admin') {
             $stmt = $pdo->prepare("INSERT INTO user_permission (user_id, module_name) VALUES (?, ?)");
             foreach ($selected_modules as $module) {
-                // Ensure the module is valid
                 if (array_key_exists($module, $available_modules)) {
                     $stmt->execute([$target_user_id, $module]);
                 }
@@ -50,12 +57,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_permissions']))
         }
         
         $pdo->commit();
-        $_SESSION['success'] = "Permissions updated successfully!";
+        $_SESSION['success'] = "User updated successfully!";
         header("Location: index.php");
         exit();
     } catch (Exception $e) {
         $pdo->rollBack();
-        $_SESSION['error'] = "Failed to update permissions: " . $e->getMessage();
+        $_SESSION['error'] = "Failed to update user: " . $e->getMessage();
         header("Location: index.php");
         exit();
     }
@@ -162,8 +169,12 @@ include '../includes/header.php';
                                 <span class="badge badge-admin rounded-pill">
                                     <i class="bi bi-patch-check-fill me-1"></i> SUPER ADMIN
                                 </span>
+                            <?php elseif ($user['role'] === 'staff'): ?>
+                                <span class="badge bg-info text-dark border badge-user rounded-pill">STAFF MEMBER</span>
+                            <?php elseif ($user['role'] === 'partner'): ?>
+                                <span class="badge bg-warning text-dark border badge-user rounded-pill">BUSINESS PARTNER</span>
                             <?php else: ?>
-                                <span class="badge bg-light text-dark border badge-user rounded-pill">STAFF MEMBER</span>
+                                <span class="badge bg-light text-dark border badge-user rounded-pill">CUSTOMER</span>
                             <?php endif; ?>
                         </td>
                         <td>
@@ -176,68 +187,85 @@ include '../includes/header.php';
                                 </span>
                             <?php else: ?>
                                 <!-- Button triggers Permissions Modal -->
-                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#permissionsModal<?php echo $user['user_id']; ?>">
-                                    <i class="bi bi-sliders me-1"></i> Manage Access
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#userModal<?php echo $user['user_id']; ?>">
+                                    <i class="bi bi-sliders me-1"></i> Manage User
                                 </button>
                                 
-                                <!-- Permissions Modal for this User -->
-                                <div class="modal fade text-start" id="permissionsModal<?php echo $user['user_id']; ?>" tabindex="-1" aria-labelledby="modalLabel<?php echo $user['user_id']; ?>" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title fw-bold" id="modalLabel<?php echo $user['user_id']; ?>">
-                                                    Access Rights for <?php echo htmlspecialchars($user['username']); ?>
-                                                </h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            
-                                            <!-- Fetch current permissions for checkboxes -->
-                                            <?php
-                                                $req = $pdo->prepare("SELECT module_name FROM user_permission WHERE user_id = ?");
-                                                $req->execute([$user['user_id']]);
-                                                $current_perms = $req->fetchAll(PDO::FETCH_COLUMN);
-                                            ?>
-                                            
-                                            <form method="POST" action="index.php">
-                                                <div class="modal-body p-4" style="background-color: #f8fafc;">
-                                                    <div class="alert alert-info border-0 shadow-sm mb-4" style="border-radius: 10px; background-color: rgba(49, 130, 206, 0.1); color: #2c5282;">
-                                                        <i class="bi bi-info-circle-fill me-2"></i>
-                                                        <span class="small fw-medium">Toggle the switches below to grant or revoke specific dashboard access.</span>
-                                                    </div>
-                                                    
-                                                    <input type="hidden" name="update_permissions" value="1">
-                                                    <input type="hidden" name="user_id" value="<?php echo $user['user_id']; ?>">
-                                                    
-                                                    <div class="row g-3">
-                                                        <?php foreach ($available_modules as $mod_key => $mod_data): ?>
+                                <?php
+                                    // Fetch current permissions for this user
+                                    $req = $pdo->prepare("SELECT module_name FROM user_permission WHERE user_id = ?");
+                                    $req->execute([$user['user_id']]);
+                                    $current_perms = $req->fetchAll(PDO::FETCH_COLUMN);
+                                    
+                                    // Build modal HTML
+                                    $modals .= '<div class="modal fade text-start" id="userModal'.$user['user_id'].'" tabindex="-1" aria-labelledby="modalLabel'.$user['user_id'].'" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title fw-bold" id="modalLabel'.$user['user_id'].'">
+                                                        Manage User: '.htmlspecialchars($user['username']).'
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                
+                                                <form method="POST" action="index.php">
+                                                    <div class="modal-body p-4" style="background-color: #f8fafc;">
+                                                        <input type="hidden" name="update_user" value="1">
+                                                        <input type="hidden" name="user_id" value="'.$user['user_id'].'">
+                                                        <div class="row mb-4">
                                                             <div class="col-md-6">
+                                                                <label class="form-label fw-bold">System Role</label>
+                                                                <select name="role" class="form-select shadow-sm" style="border-radius: 8px;">
+                                                                    <option value="admin" '.($user['role'] === 'admin' ? 'selected' : '').'>Admin</option>
+                                                                    <option value="staff" '.($user['role'] === 'staff' ? 'selected' : '').'>Staff</option>
+                                                                    <option value="partner" '.($user['role'] === 'partner' ? 'selected' : '').'>Partner</option>
+                                                                    <option value="customer" '.($user['role'] === 'customer' ? 'selected' : '').'>Customer</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="alert alert-info py-2 px-3 border-0 small mb-0 mt-2">
+                                                                    <i class="bi bi-info-circle me-1"></i> Updating the role may reset custom permissions below.
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="alert alert-info border-0 shadow-sm mb-4" style="border-radius: 10px; background-color: rgba(49, 130, 206, 0.1); color: #2c5282;">
+                                                            <i class="bi bi-shield-check me-2"></i>
+                                                            <span class="small fw-medium">Grant dashboard module access below (Only for Staff/Partners/Customers). Admin role has full access.</span>
+                                                        </div>
+                                                        
+                                                        <div class="row g-3">';
+                                                        
+                                                        foreach ($available_modules as $mod_key => $mod_data) {
+                                                            $modals .= '<div class="col-md-6">
                                                                 <div class="permission-card p-3 rounded d-flex align-items-center h-100">
                                                                     <div class="form-check form-switch p-0 m-0 d-flex align-items-center w-100">
                                                                         <input class="form-check-input ms-0 mt-0 me-3" type="checkbox" role="switch" 
-                                                                               id="perm_<?php echo $user['user_id'] . '_' . $mod_key; ?>" 
-                                                                               name="modules[]" value="<?php echo $mod_key; ?>"
+                                                                               id="perm_'.$user['user_id'].'_'.$mod_key.'" 
+                                                                               name="modules[]" value="'.$mod_key.'"
                                                                                style="width: 2.8em; height: 1.4em; cursor: pointer; float: none;"
-                                                                               <?php echo in_array($mod_key, $current_perms) ? 'checked' : ''; ?>>
-                                                                        <label class="form-check-label fw-bold mb-0 text-dark" for="perm_<?php echo $user['user_id'] . '_' . $mod_key; ?>" style="cursor: pointer; flex-grow: 1;">
-                                                                            <i class="bi <?php echo $mod_data['icon']; ?> text-primary me-2 shadow-sm p-1 rounded bg-light"></i>
-                                                                            <span class="small"><?php echo $mod_data['label']; ?></span>
+                                                                               '.(in_array($mod_key, $current_perms) ? 'checked' : '').'>
+                                                                        <label class="form-check-label fw-bold mb-0 text-dark" for="perm_'.$user['user_id'].'_'.$mod_key.'" style="cursor: pointer; flex-grow: 1;">
+                                                                            <i class="bi '.$mod_data['icon'].' text-primary me-2 shadow-sm p-1 rounded bg-light"></i>
+                                                                            <span class="small">'.$mod_data['label'].'</span>
                                                                         </label>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                        <?php endforeach; ?>
+                                                            </div>';
+                                                        }
+                                                        
+                                                        $modals .= '</div>
                                                     </div>
-                                                </div>
-                                                <div class="modal-footer bg-light border-0 py-3">
-                                                    <button type="button" class="btn btn-link text-muted fw-bold text-decoration-none" data-bs-dismiss="modal">Discard</button>
-                                                    <button type="submit" class="btn btn-primary px-4 shadow-sm" style="border-radius: 8px;">
-                                                        <i class="bi bi-save2-fill me-2"></i> Save Changes
-                                                    </button>
-                                                </div>
-                                            </form>
+                                                    <div class="modal-footer bg-light border-0 py-3">
+                                                        <button type="button" class="btn btn-link text-muted fw-bold text-decoration-none" data-bs-dismiss="modal">Discard</button>
+                                                        <button type="submit" class="btn btn-primary px-4 shadow-sm" style="border-radius: 8px;">
+                                                            <i class="bi bi-save2-fill me-2"></i> Save Changes
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
+                                    </div>';
+                                ?>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -247,5 +275,7 @@ include '../includes/header.php';
         </div>
     </div>
 </div>
+
+<?php echo $modals; ?>
 
 <?php include '../includes/footer.php'; ?>

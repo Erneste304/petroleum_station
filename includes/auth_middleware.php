@@ -14,6 +14,24 @@ function isAdmin()
 }
 
 
+function isStaff()
+{
+    return isset($_SESSION['role']) && $_SESSION['role'] === 'staff';
+}
+
+
+function isPartner()
+{
+    return isset($_SESSION['role']) && $_SESSION['role'] === 'partner';
+}
+
+
+function isCustomer()
+{
+    return isset($_SESSION['role']) && $_SESSION['role'] === 'customer';
+}
+
+
 function requireAdmin()
 {
     if (!isAdmin()) {
