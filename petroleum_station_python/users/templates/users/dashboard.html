@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Petroleum Station{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+        <h1 class="fw-bold">Welcome Back, <span class="text-info">{{ user.username|default:"Admin" }}</span></h1>
+        <p class="text-white-50">Here's what's happening at your stations today.</p>
+    </div>
+    <div class="glass-card p-2 px-4">
+        <i class="bi bi-calendar3 me-2"></i> <span id="current-date">March 11, 2026</span>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="glass-card stat-card">
+            <i class="bi bi-fuel-pump fs-1 text-info"></i>
+            <div class="stat-value">2,450</div>
+            <div class="text-white-50">Liters Sold Today</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card stat-card">
+            <i class="bi bi-cash-stack fs-1 text-success"></i>
+            <div class="stat-value">3.6M</div>
+            <div class="text-white-50">Revenue (RWF)</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card stat-card">
+            <i class="bi bi-people fs-1 text-warning"></i>
+            <div class="stat-value">124</div>
+            <div class="text-white-50">Active Customers</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card stat-card">
+            <i class="bi bi-exclamation-triangle fs-1 text-danger"></i>
+            <div class="stat-value">2</div>
+            <div class="text-white-50">Low Fuel Alerts</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="glass-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="mb-0">Recent Sales</h4>
+                <button class="btn btn-sm btn-glass">View All</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Station</th>
+                            <th>Fuel Type</th>
+                            <th>Amount</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Main Station</td>
+                            <td>Petrol</td>
+                            <td>45,000 RWF</td>
+                            <td>10:24 AM</td>
+                            <td><span class="badge bg-success">Paid</span></td>
+                        </tr>
+                        <tr>
+                            <td>Airport Station</td>
+                            <td>Diesel</td>
+                            <td>120,000 RWF</td>
+                            <td>09:45 AM</td>
+                            <td><span class="badge bg-success">Paid</span></td>
+                        </tr>
+                        <tr>
+                            <td>Main Station</td>
+                            <td>Petrol</td>
+                            <td>15,000 RWF</td>
+                            <td>09:12 AM</td>
+                            <td><span class="badge bg-warning text-dark">Pending</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="glass-card p-4 h-100">
+            <h4 class="mb-4">Quick Actions</h4>
+            <div class="d-grid gap-3">
+                <button class="btn btn-glass w-100 text-start"><i class="bi bi-plus-circle me-2"></i> Log New Sale</button>
+                <button class="btn btn-glass w-100 text-start"><i class="bi bi-calendar-event me-2"></i> Book Car Wash</button>
+                <button class="btn btn-glass w-100 text-start"><i class="bi bi-truck me-2"></i> Record Delivery</button>
+            </div>
+            <div class="mt-5">
+                <h5 class="mb-3">Fuel Levels</h5>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Petrol</span>
+                        <span>45%</span>
+                    </div>
+                    <div class="progress bg-dark" style="height: 10px;">
+                        <div class="progress-bar bg-info" style="width: 45%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Diesel</span>
+                        <span>15%</span>
+                    </div>
+                    <div class="progress bg-dark" style="height: 10px;">
+                        <div class="progress-bar bg-danger" style="width: 15%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', { 
+        month: 'long', 
+        day: 'numeric', 
+        year: 'numeric' 
+    });
+</script>
+{% endblock %}
