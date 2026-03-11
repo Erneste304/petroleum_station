@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User
+from .models import User, InternalMessage
 
 class UserCreateForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
@@ -45,4 +45,14 @@ class ProfileUpdateForm(forms.ModelForm):
             'first_name': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary'}),
             'email': forms.EmailInput(attrs={'class': 'form-control bg-dark text-white border-secondary'}),
+        }
+
+class InternalMessageForm(forms.ModelForm):
+    class Meta:
+        model = InternalMessage
+        fields = ['recipient_role', 'subject', 'body']
+        widgets = {
+            'recipient_role': forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary'}),
+            'subject': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary'}),
+            'body': forms.Textarea(attrs={'class': 'form-control bg-dark text-white border-secondary', 'rows': 4}),
         }

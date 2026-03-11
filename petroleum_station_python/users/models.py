@@ -91,3 +91,38 @@ class StaffReport(models.Model):
 
     def __str__(self):
         return f"[{self.get_report_type_display()}] {self.title} — {self.get_status_display()}"
+
+
+class AuditLog(models.Model):
+    model_name = models.CharField(max_length=100)
+    object_id = models.CharField(max_length=255)
+    changed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='audit_logs')
+    old_data = models.JSONField(blank=True, null=True)
+    new_data = models.JSONField(blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.model_name} ({self.object_id}) changed by {self.changed_by.username if self.changed_by else 'Unknown'}"
+
+
+class InternalMessage(models.Model):
+    ROLE_CHOICES = (
+        ('staff', 'Staff Member'),
+        ('accountant', 'Accountant'),
+    )
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    recipient_role = models.CharField(max_length=50, choices=ROLE_CHOICES)
+    subject = models.CharField(max_length=200)
+    body = models.TextField()
+    related_sale_id = models.IntegerField(blank=True, null=True)  # Optional reference to a problem sale
+    is_resolved = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"Message from {self.sender.username} to {self.get_recipient_role_display()} - {self.subject}"

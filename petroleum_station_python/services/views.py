@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import CarWashBooking, CarWashService
 from .forms import CarWashBookingForm
 from users.decorators import role_required
@@ -19,7 +19,7 @@ def booking_create(request):
         form = CarWashBookingForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('users:dashboard')
+            return redirect('services:booking_list')
     else:
         form = CarWashBookingForm()
     return render(request, 'services/booking_form.html', {'form': form})

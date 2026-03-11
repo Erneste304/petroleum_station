@@ -52,7 +52,7 @@
                                 <a href="{% url 'users:report_accountant_approve' report.pk %}" class="btn btn-sm btn-outline-info me-2">Review</a>
                             {% endif %}
 
-                            {% if request.user.role == 'admin' and report.status == 'accountant_approved' and report.report_type == 'financial' %}
+                            {% if request.user.role == 'admin' and report.status == 'accountant_approved' %}
                                 <a href="{% url 'users:report_admin_approve' report.pk %}" class="btn btn-sm btn-outline-success me-2">Finalize</a>
                             {% endif %}
                             

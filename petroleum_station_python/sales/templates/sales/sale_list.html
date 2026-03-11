@@ -8,7 +8,7 @@
         <h1 class="fw-bold">Sales History</h1>
         <p class="text-white-50">View all transactions from MySQL.</p>
     </div>
-    <button class="btn btn-glass"><i class="bi bi-plus-lg me-2"></i> New Sale</button>
+    <a href="{% url 'sales:sale_create' %}" class="btn btn-glass"><i class="bi bi-plus-lg me-2"></i> New Sale</a>
 </div>
 
 <div class="glass-card p-4">
@@ -33,7 +33,12 @@
                     <td>{{ sale.total_amount }} RWF</td>
                     <td>{{ sale.sale_date|date:"Y-m-d H:i" }}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></button>
+                        <button class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></button>
+                        {% if request.user.role in 'admin,accountant,staff' %}
+                        <a href="{% url 'sales:sale_edit' sale.pk %}" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i> Edit</a>
+                        {% elif request.user.role == 'receptionist' %}
+                        <a href="{% url 'users:report_issue' sale.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-exclamation-triangle"></i> Report Issue</a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% empty %}

@@ -164,11 +164,15 @@
             {% endif %}
             
             {% if request.user.role in 'admin,accountant,staff' %}
-            <a class="nav-link {% if 'report' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'users:report_list' %}"><i class="bi bi-file-earmark-text"></i> Reports</a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'inbox' %}active{% endif %}" href="{% url 'users:inbox' %}">
+                <i class="bi bi-inbox"></i> Inbox
+            </a>
+            <a class="nav-link {% if 'report' in request.resolver_match.url_name and request.resolver_match.url_name != 'report_issue' %}active{% endif %}" href="{% url 'users:report_list' %}"><i class="bi bi-file-earmark-text"></i> Reports</a>
             {% endif %}
             
             {% if request.user.role == 'admin' %}
             <a class="nav-link {% if request.resolver_match.app_name == 'users' and request.resolver_match.url_name == 'user_list' %}active{% endif %}" href="{% url 'users:user_list' %}"><i class="bi bi-people"></i> Users</a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'audit_logs' %}active{% endif %}" href="{% url 'users:audit_logs' %}"><i class="bi bi-clock-history"></i> Audit Logs</a>
             {% endif %}
 
             <a class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}" href="{% url 'users:profile' %}"><i class="bi bi-person-badge"></i> My Profile</a>

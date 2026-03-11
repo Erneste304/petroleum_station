@@ -6,8 +6,8 @@ from sales.models import Sale
 from inventory.models import FuelType, Tank
 from loyalty.models import LoyaltyRedemption
 from services.models import CarWashService
-from .models import User, StaffReport, Customer
-from .forms import UserCreateForm, UserEditForm, ProfileUpdateForm
+from .models import User, StaffReport, Customer, InternalMessage, AuditLog
+from .forms import UserCreateForm, UserEditForm, ProfileUpdateForm, InternalMessageForm
 from .report_forms import StaffReportForm, ApprovalNoteForm, RejectionForm
 from .decorators import role_required
 from django.utils import timezone
@@ -106,7 +106,7 @@ def report_list(request):
     if request.user.is_admin:
         reports = StaffReport.objects.all()
     elif request.user.is_accountant:
-        reports = StaffReport.objects.filter(report_type='financial')
+        reports = StaffReport.objects.all()
     else:
         reports = StaffReport.objects.filter(submitted_by=request.user)
         
@@ -160,8 +160,8 @@ def report_accountant_approve(request, pk):
 @role_required('admin')
 def report_admin_approve(request, pk):
     report = get_object_or_404(StaffReport, pk=pk)
-    if report.status != 'accountant_approved' and report.report_type == 'financial':
-        messages.error(request, 'Financial reports must be approved by accountant first.')
+    if report.status != 'accountant_approved':
+        messages.error(request, 'Report must be approved by accountant first.')
         return redirect('users:report_list')
         
     if request.method == 'POST':
@@ -218,3 +218,32 @@ def profile(request):
         form = ProfileUpdateForm(instance=request.user)
     
     return render(request, 'users/profile.html', {'user': request.user, 'form': form})
+
+@login_required
+@role_required('receptionist')
+def report_issue(request, sale_id):
+    sale = get_object_or_404(Sale, pk=sale_id)
+    if request.method == 'POST':
+        form = InternalMessageForm(request.POST)
+        if form.is_valid():
+            msg = form.save(commit=False)
+            msg.sender = request.user
+            msg.related_sale_id = sale_id
+            msg.save()
+            messages.success(request, 'Issue reported successfully.')
+            return redirect('sales:sale_list')
+    else:
+        form = InternalMessageForm(initial={'subject': f'Issue with Sale #{sale_id}'})
+    return render(request, 'users/report_issue.html', {'form': form, 'sale': sale})
+
+@login_required
+@role_required('admin', 'accountant', 'staff')
+def inbox(request):
+    messages = InternalMessage.objects.filter(recipient_role=request.user.role, is_resolved=False).order_by('-timestamp')
+    return render(request, 'users/inbox.html', {'messages': messages})
+
+@login_required
+@role_required('admin')
+def audit_logs(request):
+    logs = AuditLog.objects.all().order_by('-timestamp')
+    return render(request, 'users/audit_logs.html', {'logs': logs})

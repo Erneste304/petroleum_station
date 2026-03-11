@@ -18,6 +18,9 @@ urlpatterns = [
     path('reports/<int:pk>/approve/admin/', views.report_admin_approve, name='report_admin_approve'),
     path('reports/<int:pk>/reject/', views.report_reject, name='report_reject'),
     path('profile/', views.profile, name='profile'),
+    path('messages/report-issue/<int:sale_id>/', views.report_issue, name='report_issue'),
+    path('messages/inbox/', views.inbox, name='inbox'),
+    path('audit-logs/', views.audit_logs, name='audit_logs'),
     path('', views.dashboard, name='home'),
 ]
 
