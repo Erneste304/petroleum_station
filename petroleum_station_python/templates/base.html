@@ -141,16 +141,44 @@
     <div class="sidebar glass-card m-3">
         <a href="/" class="navbar-brand">PETROLEUM PRO</a>
         <nav class="nav flex-column">
-            <a class="nav-link active" href="/dashboard/"><i class="bi bi-speedometer2"></i> Dashboard</a>
-            <a class="nav-link" href="#"><i class="bi bi-geo-alt"></i> Stations</a>
-            <a class="nav-link" href="#"><i class="bi bi-fuel-pump"></i> Fuel Management</a>
-            <a class="nav-link" href="#"><i class="bi bi-cart3"></i> Sales</a>
-            <a class="nav-link" href="#"><i class="bi bi-droplet"></i> Car Wash</a>
-            <a class="nav-link" href="#"><i class="bi bi-star"></i> Loyalty</a>
-            <a class="nav-link" href="#"><i class="bi bi-people"></i> Users</a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'users:dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            
+            {% if request.user.role in 'admin,accountant,staff,partner' %}
+            <a class="nav-link {% if request.resolver_match.app_name == 'stations' %}active{% endif %}" href="{% url 'stations:station_list' %}"><i class="bi bi-geo-alt"></i> Stations</a>
+            {% endif %}
+            
+            {% if request.user.role in 'admin,accountant,staff,partner' %}
+            <a class="nav-link {% if request.resolver_match.app_name == 'inventory' %}active{% endif %}" href="{% url 'inventory:fuel_status' %}"><i class="bi bi-fuel-pump"></i> Fuel Management</a>
+            {% endif %}
+            
+            {% if request.user.role in 'admin,accountant,staff,receptionist' %}
+            <a class="nav-link {% if request.resolver_match.app_name == 'sales' %}active{% endif %}" href="{% url 'sales:sale_list' %}"><i class="bi bi-cart3"></i> Sales</a>
+            {% endif %}
+            
+            {% if request.user.role in 'admin,accountant,staff,receptionist' %}
+            <a class="nav-link {% if request.resolver_match.app_name == 'services' %}active{% endif %}" href="{% url 'services:booking_list' %}"><i class="bi bi-droplet"></i> Car Wash</a>
+            {% endif %}
+            
+            {% if request.user.role in 'admin,accountant,staff,receptionist' %}
+            <a class="nav-link {% if request.resolver_match.app_name == 'loyalty' %}active{% endif %}" href="{% url 'loyalty:reward_list' %}"><i class="bi bi-star"></i> Loyalty</a>
+            {% endif %}
+            
+            {% if request.user.role in 'admin,accountant,staff' %}
+            <a class="nav-link {% if 'report' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'users:report_list' %}"><i class="bi bi-file-earmark-text"></i> Reports</a>
+            {% endif %}
+            
+            {% if request.user.role == 'admin' %}
+            <a class="nav-link {% if request.resolver_match.app_name == 'users' and request.resolver_match.url_name == 'user_list' %}active{% endif %}" href="{% url 'users:user_list' %}"><i class="bi bi-people"></i> Users</a>
+            {% endif %}
+
+            <a class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}" href="{% url 'users:profile' %}"><i class="bi bi-person-badge"></i> My Profile</a>
+            
             <hr class="my-4" style="border-color: var(--glass-border)">
-            <a class="nav-link text-danger" href="#"><i class="bi bi-box-arrow-right"></i> Logout</a>
+            <a class="nav-link text-danger" href="{% url 'users:logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
+
+
         </nav>
+
     </div>
 
     <div class="main-content">

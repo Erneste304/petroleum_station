@@ -1,0 +1,48 @@
+from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from .models import User
+
+class UserCreateForm(UserCreationForm):
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name', 'role', 'password1', 'password2']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control bg-dark text-white border-secondary'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary'}),
+            'role': forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in ['password1', 'password2']:
+            self.fields[field_name].widget.attrs.update({
+                'class': 'form-control bg-dark text-white border-secondary'
+            })
+
+
+class UserEditForm(forms.ModelForm):
+    """Form for editing existing users — no password fields."""
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name', 'role', 'is_active']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control bg-dark text-white border-secondary'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary'}),
+            'role': forms.Select(attrs={'class': 'form-select bg-dark text-white border-secondary'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+class ProfileUpdateForm(forms.ModelForm):
+    """Form for users to edit their own profile info."""
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control bg-dark text-white border-secondary'}),
+        }

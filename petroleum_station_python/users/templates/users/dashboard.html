@@ -9,118 +9,232 @@
         <p class="text-white-50">Here's what's happening at your stations today.</p>
     </div>
     <div class="glass-card p-2 px-4">
-        <i class="bi bi-calendar3 me-2"></i> <span id="current-date">March 11, 2026</span>
+        <i class="bi bi-calendar3 me-2"></i> <span id="current-date"></span>
     </div>
 </div>
 
 <div class="row g-4 mb-5">
+    {% if request.user.role in 'admin,accountant,staff,receptionist' %}
     <div class="col-md-3">
         <div class="glass-card stat-card">
             <i class="bi bi-fuel-pump fs-1 text-info"></i>
-            <div class="stat-value">2,450</div>
-            <div class="text-white-50">Liters Sold Today</div>
+            <div class="stat-value">{{ total_sales|default:"0" }}</div>
+            <div class="text-white-50">Total Sales Record</div>
         </div>
     </div>
+    {% endif %}
+    {% if request.user.role in 'admin,accountant,staff,partner' %}
     <div class="col-md-3">
         <div class="glass-card stat-card">
             <i class="bi bi-cash-stack fs-1 text-success"></i>
-            <div class="stat-value">3.6M</div>
-            <div class="text-white-50">Revenue (RWF)</div>
+            <div class="stat-value">{{ stations_count|default:"0" }}</div>
+            <div class="text-white-50">Active Stations</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="glass-card stat-card">
             <i class="bi bi-people fs-1 text-warning"></i>
-            <div class="stat-value">124</div>
-            <div class="text-white-50">Active Customers</div>
+            <div class="stat-value">{{ fuel_types.count|default:"0" }}</div>
+            <div class="text-white-50">Fuel Types</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="glass-card stat-card">
-            <i class="bi bi-exclamation-triangle fs-1 text-danger"></i>
-            <div class="stat-value">2</div>
-            <div class="text-white-50">Low Fuel Alerts</div>
+            <i class="bi bi-truck fs-1 text-danger"></i>
+            <div class="stat-value">{{ tanks.count|default:"0" }}</div>
+            <div class="text-white-50">Fuel Tanks</div>
         </div>
     </div>
+    {% endif %}
+
+    {% if request.user.role == 'customer' %}
+    <div class="col-md-4">
+        <div class="glass-card stat-card">
+            <i class="bi bi-cart-check fs-1 text-info"></i>
+            <div class="stat-value">{{ my_total_purchases|default:"0" }}</div>
+            <div class="text-white-50">My Total Purchases</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card stat-card">
+            <i class="bi bi-wallet2 fs-1 text-success"></i>
+            <div class="stat-value">{{ my_total_spent|default:"0" }} RWF</div>
+            <div class="text-white-50">Total Amount Spent</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card stat-card">
+            <i class="bi bi-gift fs-1 text-warning"></i>
+            <div class="stat-value">{{ rewards_count|default:"0" }}</div>
+            <div class="text-white-50">Available Rewards</div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 <div class="row g-4">
+    {% if request.user.role in 'admin,accountant,staff,receptionist' %}
     <div class="col-lg-8">
         <div class="glass-card p-4 h-100">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4 class="mb-0">Recent Sales</h4>
-                <button class="btn btn-sm btn-glass">View All</button>
+                <a href="{% url 'sales:sale_list' %}" class="btn btn-sm btn-glass">View All</a>
             </div>
             <div class="table-responsive">
                 <table class="table table-dark table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>Station</th>
-                            <th>Fuel Type</th>
-                            <th>Amount</th>
-                            <th>Time</th>
-                            <th>Status</th>
+                            <th>ID</th>
+                            <th>Quantity</th>
+                            <th>Total Amount</th>
+                            <th>Date</th>
                         </tr>
                     </thead>
                     <tbody>
+                        {% for sale in latest_sales %}
                         <tr>
-                            <td>Main Station</td>
-                            <td>Petrol</td>
-                            <td>45,000 RWF</td>
-                            <td>10:24 AM</td>
-                            <td><span class="badge bg-success">Paid</span></td>
+                            <td>#{{ sale.sale_id }}</td>
+                            <td>{{ sale.quantity }} L</td>
+                            <td>{{ sale.total_amount }} RWF</td>
+                            <td>{{ sale.sale_date|date:"M d, H:i" }}</td>
                         </tr>
+                        {% empty %}
                         <tr>
-                            <td>Airport Station</td>
-                            <td>Diesel</td>
-                            <td>120,000 RWF</td>
-                            <td>09:45 AM</td>
-                            <td><span class="badge bg-success">Paid</span></td>
+                            <td colspan="4" class="text-center text-white-50">No recent sales found.</td>
                         </tr>
-                        <tr>
-                            <td>Main Station</td>
-                            <td>Petrol</td>
-                            <td>15,000 RWF</td>
-                            <td>09:12 AM</td>
-                            <td><span class="badge bg-warning text-dark">Pending</span></td>
-                        </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+    {% endif %}
+    
+    {% if request.user.role in 'admin,accountant,staff,partner' %}
     <div class="col-lg-4">
         <div class="glass-card p-4 h-100">
-            <h4 class="mb-4">Quick Actions</h4>
-            <div class="d-grid gap-3">
-                <button class="btn btn-glass w-100 text-start"><i class="bi bi-plus-circle me-2"></i> Log New Sale</button>
-                <button class="btn btn-glass w-100 text-start"><i class="bi bi-calendar-event me-2"></i> Book Car Wash</button>
-                <button class="btn btn-glass w-100 text-start"><i class="bi bi-truck me-2"></i> Record Delivery</button>
-            </div>
-            <div class="mt-5">
-                <h5 class="mb-3">Fuel Levels</h5>
-                <div class="mb-3">
+            <h4 class="mb-4">Live Fuel Levels</h4>
+            <div class="mt-2">
+                {% for tank in tanks %}
+                <div class="mb-4">
                     <div class="d-flex justify-content-between mb-1">
-                        <span>Petrol</span>
-                        <span>45%</span>
+                        <span>{{ tank.fuel.fuel_name }}</span>
+                        <span>{{ tank.current_stock }} / {{ tank.capacity }} L</span>
                     </div>
                     <div class="progress bg-dark" style="height: 10px;">
-                        <div class="progress-bar bg-info" style="width: 45%"></div>
+                        <div class="progress-bar {% if tank.percentage < 20 %}bg-danger{% else %}bg-info{% endif %}" style="width: {{ tank.percentage }}%"></div>
+                    </div>
+
+                </div>
+                {% empty %}
+                <p class="text-white-50">No tank data available.</p>
+                {% endfor %}
+            </div>
+            <div class="d-grid gap-3 mt-5">
+                <a href="{% url 'sales:sale_create' %}" class="btn btn-glass w-100 text-start"><i class="bi bi-plus-circle me-2"></i> Log New Sale</a>
+                <a href="{% url 'services:booking_create' %}" class="btn btn-glass w-100 text-start"><i class="bi bi-calendar-event me-2"></i> Book Car Wash</a>
+
+            </div>
+        </div>
+    {% endif %}
+    {% if request.user.role == 'customer' %}
+    <div class="col-lg-12">
+        <div class="glass-card p-4 mb-4">
+            <h4 class="mb-4">Our Services</h4>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <h5 class="mb-3"><i class="bi bi-droplet text-info me-2"></i>Available Services</h5>
+                    <ul class="list-group list-group-flush bg-transparent">
+                        {% for service in available_services %}
+                        <li class="list-group-item bg-transparent text-white border-secondary d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold">{{ service.name }}</span>
+                                <div class="small text-white-50">{{ service.description|truncatechars:50 }}</div>
+                            </div>
+                            <span class="badge bg-info text-dark">{{ service.price }} RWF</span>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item bg-transparent text-white-50 text-center">No services currently listed.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="mb-3"><i class="bi bi-fuel-pump text-info me-2"></i>Fuel Prices</h5>
+                    <ul class="list-group list-group-flush bg-transparent">
+                        {% for fuel in fuel_types %}
+                        <li class="list-group-item bg-transparent text-white border-secondary d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">{{ fuel.fuel_name }}</span>
+                            <span class="badge bg-secondary">{{ fuel.price_per_liter }} RWF/L</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-12">
+        <div class="glass-card p-4 mb-4">
+            <h4 class="mb-4">My Recent Activity</h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Recent Purchases</h5>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Quantity</th>
+                                    <th>Total Amount</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sale in customer_sales %}
+                                <tr>
+                                    <td>{{ sale.quantity }} L</td>
+                                    <td>{{ sale.total_amount }} RWF</td>
+                                    <td>{{ sale.sale_date|date:"M d" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-white-50">No purchases found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between mb-1">
-                        <span>Diesel</span>
-                        <span>15%</span>
-                    </div>
-                    <div class="progress bg-dark" style="height: 10px;">
-                        <div class="progress-bar bg-danger" style="width: 15%"></div>
+                <div class="col-md-6">
+                    <h5>Recent Redemptions</h5>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Reward</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for redemption in customer_redemptions %}
+                                <tr>
+                                    <td>{{ redemption.reward.name }}</td>
+                                    <td><span class="badge bg-secondary">{{ redemption.status }}</span></td>
+                                    <td>{{ redemption.redeemed_date|date:"M d" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-white-50">No redemptions found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+    {% endif %}
 
 <script>
     document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', { 
@@ -130,3 +244,4 @@
     });
 </script>
 {% endblock %}
+

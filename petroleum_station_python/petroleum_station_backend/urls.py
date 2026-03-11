@@ -16,15 +16,17 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', RedirectView.as_view(url='/dashboard/', permanent=False)),
     path('users/', include('users.urls')),
     path('stations/', include('stations.urls')),
     path('inventory/', include('inventory.urls')),
     path('sales/', include('sales.urls')),
     path('services/', include('services.urls')),
     path('loyalty/', include('loyalty.urls')),
-    path('', include('users.urls')), # Redirect home to users (login/dashboard)
 ]
+
 
